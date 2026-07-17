@@ -178,7 +178,10 @@ export default function Header({
                   fontSize: "0.82rem",
                   fontWeight: isActive ? 600 : 500,
                   opacity: isActive ? 1 : 0.72,
-                  // Underline sits flush with the bar's bottom hairline.
+                  // Underline sits flush with the bar's bottom hairline. A
+                  // matching transparent top border balances the box so the
+                  // label stays optically centered in the 44px bar.
+                  borderTop: "2px solid transparent",
                   borderBottom: "2px solid transparent",
                   borderBottomColor: isActive ? tint.accent : "transparent",
                   whiteSpace: "nowrap",
