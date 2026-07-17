@@ -14,6 +14,7 @@ import {
   useTheme,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import PublicIcon from "@mui/icons-material/Public";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import Section from "@/components/reachy/Section";
 import { useApps } from "@/context/AppsContext";
@@ -609,7 +610,7 @@ function StatsSection() {
                 Join our Discord Community
               </Typography>
               <Typography sx={{ color: "rgba(255,255,255,0.5)", fontSize: 14, mt: 0.5 }}>
-                We are already 4500+ Makers →
+                We are already +9.000 Makers →
               </Typography>
             </Box>
           </Box>
@@ -768,7 +769,7 @@ function ProductsSection() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              $449
+              $499
             </Typography>
 
             <Stack spacing={1} sx={{ mb: 4, textAlign: "left", maxWidth: 280, mx: "auto" }}>
@@ -788,11 +789,29 @@ function ProductsSection() {
               variant="contained"
               size="large"
               fullWidth
-              href="https://buy.stripe.com/9B65kFfFlaKFbY34W873G03"
+              href="https://store.pollen-robotics.com/products/reachy-mini-wireless-version"
               target="_blank"
               sx={{ py: 1.5 }}
             >
               Order Now
+            </Button>
+
+            <Typography
+              sx={{ mt: 2, fontSize: 13, fontWeight: 600, color: "text.secondary" }}
+            >
+              Outside EU/UK &amp; US/Canada?
+            </Typography>
+            <Button
+              variant="outlined"
+              size="medium"
+              fullWidth
+              href="https://www.seeedstudio.com/Reachy-Mini-Wireless-Kit-p-6724.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<PublicIcon />}
+              sx={{ mt: 1 }}
+            >
+              Order via Seeed Studio
             </Button>
           </Box>
         </Grid>
@@ -806,7 +825,7 @@ function ProductsSection() {
               USB • External compute
             </Typography>
 
-            <Typography sx={{ fontSize: 56, fontWeight: 800, mb: 3, color: "text.primary" }}>$299</Typography>
+            <Typography sx={{ fontSize: 56, fontWeight: 800, mb: 3, color: "text.primary" }}>$399</Typography>
 
             <Stack spacing={1} sx={{ mb: 4, textAlign: "left", maxWidth: 280, mx: "auto" }}>
               {[
@@ -825,11 +844,29 @@ function ProductsSection() {
               variant="outlined"
               size="large"
               fullWidth
-              href="https://buy.stripe.com/6oUfZj78P1a5e6b0FS73G02"
+              href="https://store.pollen-robotics.com/products/reachy-mini-lite-version"
               target="_blank"
               sx={{ py: 1.5 }}
             >
               Order Now
+            </Button>
+
+            <Typography
+              sx={{ mt: 2, fontSize: 13, fontWeight: 600, color: "text.secondary" }}
+            >
+              Outside EU/UK &amp; US/Canada?
+            </Typography>
+            <Button
+              variant="outlined"
+              size="medium"
+              fullWidth
+              href="https://www.seeedstudio.com/Reachy-Mini-Lite-Kit-p-6702.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<PublicIcon />}
+              sx={{ mt: 1 }}
+            >
+              Order via Seeed Studio
             </Button>
           </Box>
         </Grid>
@@ -837,12 +874,23 @@ function ProductsSection() {
 
       <Box sx={{ textAlign: "center", mt: 5 }}>
         <Typography variant="body1" sx={{ color: "text.primary", fontWeight: 600 }}>
-          Current Lead time: 90 days after purchase
+          Lead time: up to 90 days after purchase (many orders ship sooner)
         </Typography>
         <Typography variant="body2" sx={{ color: "text.secondary", mt: 1, maxWidth: 520, mx: "auto", lineHeight: 1.7 }}>
-          <strong>Import duties:</strong> EU/UK + US/Canada ship duty-paid (DDP).
+          <strong>Shipping and import duties:</strong> all orders ship DAP (Delivered At Place).
           <br />
-          Other destinations may incur local import duties/taxes on delivery (DAP).
+          Shipping costs and any local import duties, taxes, or customs fees are the responsibility of the buyer and are not included in the product price.
+          <br />
+          Our store ships to EU/UK and US/Canada. For other countries, order
+          from our official distributor{" "}
+          <Link
+            href="https://www.seeedstudio.com/Reachy-Mini-Wireless-Kit-p-6724.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Seeed Studio
+          </Link>
+          .
         </Typography>
       </Box>
 
@@ -1100,7 +1148,7 @@ function CommunitySection() {
       >
         <Box sx={{ position: "relative", zIndex: 1 }}>
           <Typography variant="h2" sx={{ mb: 2 }}>
-            Join 4500+ makers
+            Join +9.000 makers
           </Typography>
           <Typography sx={{ color: "rgba(255,255,255,0.6)", maxWidth: 500, mx: "auto", mb: 4, lineHeight: 1.8 }}>
             Connect with other Reachy Mini owners on Discord. Share your projects, get help, and

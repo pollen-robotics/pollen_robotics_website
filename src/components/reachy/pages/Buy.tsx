@@ -7,6 +7,7 @@ import {
   Container,
   Typography,
   Button,
+  Link,
   Grid,
   Card,
   CardContent,
@@ -24,6 +25,7 @@ import {
   Paper,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
+import PublicIcon from "@mui/icons-material/Public";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -40,6 +42,7 @@ interface Product {
   badgeColor: string;
   description: string;
   buyLink: string;
+  seeedLink: string;
   image: string;
   featured: boolean;
 }
@@ -48,24 +51,29 @@ const products: Record<string, Product> = {
   wireless: {
     name: "Reachy Mini",
     tagline: "The complete experience",
-    price: 449,
+    price: 499,
     badge: "Wireless",
     badgeColor: "#0ea5e9",
     description:
-      "Self-contained robot with on-board compute. Works wirelessly or wired, perfect for standalone projects and demos. <strong>Ships in 60 days</strong>.",
-    buyLink: "https://buy.stripe.com/9B65kFfFlaKFbY34W873G03",
+      "Self-contained robot with on-board compute. Works wirelessly or wired, perfect for standalone projects and demos. <strong>Lead time: up to 90 days after purchase</strong> (many orders ship sooner).",
+    buyLink:
+      "https://store.pollen-robotics.com/products/reachy-mini-wireless-version",
+    seeedLink:
+      "https://www.seeedstudio.com/Reachy-Mini-Wireless-Kit-p-6724.html",
     image: "/assets/reachy-wireless.png",
     featured: true,
   },
   lite: {
     name: "Reachy Mini Lite",
     tagline: "Perfect to get started",
-    price: 299,
+    price: 399,
     badge: "Lite",
     badgeColor: "#f59e0b",
     description:
-      "Connect to your computer via USB. Same expressive robot, powered by your machine. Ideal for development and learning. <strong>Ships in 30 days</strong>.",
-    buyLink: "https://buy.stripe.com/6oUfZj78P1a5e6b0FS73G02",
+      "Connect to your computer via USB. Same expressive robot, powered by your machine. Ideal for development and learning. <strong>Lead time: up to 90 days after purchase</strong> (many orders ship sooner).",
+    buyLink:
+      "https://store.pollen-robotics.com/products/reachy-mini-lite-version",
+    seeedLink: "https://www.seeedstudio.com/Reachy-Mini-Lite-Kit-p-6702.html",
     image: "/assets/reachy-lite.png",
     featured: false,
   },
@@ -112,7 +120,7 @@ const faqItems = [
   {
     question: "What about customs and import taxes?",
     answer:
-      "EU/UK and US/Canada orders ship duty-paid (DDP) — no surprise fees on delivery. Other destinations ship DAP, meaning local import duties and taxes may apply upon delivery.",
+      "All orders ship DAP (Delivered At Place). Shipping costs and any local import duties, taxes, or customs fees are the responsibility of the buyer and are not included in the product price.",
   },
   {
     question: "Can I upgrade from Lite to Wireless later?",
@@ -325,6 +333,31 @@ function ProductCardsSection() {
                 >
                   Buy {product.badge} — ${product.price}
                 </Button>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 2,
+                    textAlign: "center",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "text.secondary",
+                  }}
+                >
+                  Outside EU/UK &amp; US/Canada?
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  fullWidth
+                  href={product.seeedLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<PublicIcon />}
+                  sx={{ mt: 1 }}
+                >
+                  Order via Seeed Studio
+                </Button>
               </CardContent>
             </Card>
           </Grid>
@@ -333,12 +366,23 @@ function ProductCardsSection() {
 
       <Box sx={{ textAlign: "center", mt: 5, mb: 6 }}>
         <Typography variant="body1" sx={{ fontWeight: 600, color: "text.primary" }}>
-          Current Lead time: 90 days after purchase
+          Lead time: up to 90 days after purchase (many orders ship sooner)
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 600, mx: "auto", lineHeight: 1.7, mt: 1 }}>
-          <strong>Import duties:</strong> EU/UK + US/Canada ship duty-paid (DDP).
+          <strong>Shipping and import duties:</strong> all orders ship DAP (Delivered At Place).
           <br />
-          Other destinations may incur local import duties/taxes on delivery (DAP).
+          Shipping costs and any local import duties, taxes, or customs fees are the responsibility of the buyer and are not included in the product price.
+          <br />
+          Our store ships to EU/UK and US/Canada. For other countries, order
+          from our official distributor{" "}
+          <Link
+            href="https://www.seeedstudio.com/Reachy-Mini-Wireless-Kit-p-6724.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Seeed Studio
+          </Link>
+          .
         </Typography>
       </Box>
     </Container>
@@ -374,13 +418,13 @@ function ComparisonSection() {
                   <TableCell align="center" sx={{ fontWeight: 700, fontSize: 15, py: 2.5 }}>
                     <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "center" }}>
                       <Chip label="Wireless" size="small" sx={{ bgcolor: "#0ea5e920", color: "#0ea5e9", fontWeight: 600 }} />
-                      <Typography sx={{ fontWeight: 700 }}>$449</Typography>
+                      <Typography sx={{ fontWeight: 700 }}>$499</Typography>
                     </Stack>
                   </TableCell>
                   <TableCell align="center" sx={{ fontWeight: 700, fontSize: 15, py: 2.5 }}>
                     <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "center" }}>
                       <Chip label="Lite" size="small" sx={{ bgcolor: "#f59e0b20", color: "#f59e0b", fontWeight: 600 }} />
-                      <Typography sx={{ fontWeight: 700 }}>$299</Typography>
+                      <Typography sx={{ fontWeight: 700 }}>$399</Typography>
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -528,7 +572,7 @@ function FinalCTASection() {
             endIcon={<OpenInNewIcon />}
             sx={{ bgcolor: "#FF9500", px: 4, "&:hover": { bgcolor: "#e68600" } }}
           >
-            Buy Wireless — $449
+            Buy Wireless — $499
           </Button>
           <Button
             variant="outlined"
@@ -543,7 +587,7 @@ function FinalCTASection() {
               "&:hover": { borderColor: "white", bgcolor: "rgba(255,255,255,0.1)" },
             }}
           >
-            Buy Lite — $299
+            Buy Lite — $399
           </Button>
         </Stack>
       </Container>
