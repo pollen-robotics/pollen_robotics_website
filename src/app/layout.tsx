@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   },
   description:
     "Pollen Robotics designs expressive, open-source robots - hardware, software, and everything in between.",
+  icons: {
+    icon: [{ url: "/assets/pollen-mark.png", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({

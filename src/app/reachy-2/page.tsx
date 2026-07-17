@@ -265,7 +265,16 @@ export default function Reachy2Page() {
               "& img": { width: "100%", height: "100%", objectFit: "cover", display: "block" },
             }}
           >
-            <img src={`${ASSET}/full-robot.webp`} alt="Reachy 2 humanoid robot" />
+            <Box
+              component="video"
+              src={`${ASSET}/reachy2-orange-grasp.mp4`}
+              autoPlay
+              muted
+              loop
+              playsInline
+              aria-label="Reachy 2 grasping an orange"
+              sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
           </Box>
         </Box>
       </Box>
@@ -292,10 +301,10 @@ export default function Reachy2Page() {
         </Box>
       </Box>
 
-      {/* The frontier + demo video */}
+      {/* The next frontier */}
       <Box component="section" sx={{ bgcolor: "background.paper" }}>
         <Box sx={{ maxWidth: 1280, mx: "auto", px: CONTENT_PX, py: { xs: 6, md: 10 } }}>
-          <Box sx={{ maxWidth: "40ch", mb: { xs: 4, md: 6 } }}>
+          <Box sx={{ maxWidth: "40ch" }}>
             <Eyebrow>The next frontier</Eyebrow>
             <Typography
               component="h2"
@@ -309,17 +318,6 @@ export default function Reachy2Page() {
               shop.
             </Typography>
           </Box>
-          <MediaCard>
-            <Box
-              component="video"
-              src={`${ASSET}/teleop.mp4`}
-              autoPlay
-              muted
-              loop
-              playsInline
-              sx={{ aspectRatio: "unset" }}
-            />
-          </MediaCard>
         </Box>
       </Box>
 
@@ -332,7 +330,7 @@ export default function Reachy2Page() {
             body="Take control of Reachy 2 remotely using VR and our teleoperation application. Move its arms, hands and head, and see through Reachy's cameras to interact with the environment around the robot."
             media={
               <MediaCard>
-                <img src={`${ASSET}/platform.webp`} alt="Reachy 2 teleoperation platform" loading="lazy" />
+                <img src={`${ASSET}/vr-teleop.webp`} alt="A person teleoperating Reachy 2 with a VR headset" loading="lazy" />
               </MediaCard>
             }
           />
@@ -343,7 +341,14 @@ export default function Reachy2Page() {
             body="With 7 degrees of freedom, Reachy 2's arms mirror the dimensions, proportions and movements of an adult human arm. One arm can lift objects up to 3 kg and manipulate them with real dexterity."
             media={
               <MediaCard>
-                <img src={`${ASSET}/dual-arm.webp`} alt="Reachy 2 dual arm configuration" loading="lazy" />
+                <video
+                  src={`${ASSET}/reachy2-arm.mp4`}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  aria-label="Reachy 2 arm grasping an apple with its gripper"
+                />
               </MediaCard>
             }
           />
@@ -353,7 +358,14 @@ export default function Reachy2Page() {
             body="Reachy 2 is available on an omnidirectional mobile base for a wider working space. Three omniwheels, a cylinder-like structure, a suite of sensors and a LiDAR make navigation effortless."
             media={
               <MediaCard>
-                <img src={`${ASSET}/dual-arm-mobile-base.webp`} alt="Reachy 2 on its mobile base" loading="lazy" />
+                <video
+                  src={`${ASSET}/reachy2-mobility.mp4`}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  aria-label="Reachy 2 moving around on its mobile base"
+                />
               </MediaCard>
             }
           />
