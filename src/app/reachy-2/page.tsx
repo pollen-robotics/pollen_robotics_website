@@ -13,6 +13,7 @@ const DOCS_URL = "https://docs.pollen-robotics.com/";
 const SDK_URL = "https://github.com/pollen-robotics/reachy2-sdk";
 
 const ASSET = "/assets/reachy2";
+const DATASHEET = "/assets/reachy2/datasheets";
 
 const CONTENT_PX = "clamp(1.25rem, 5vw, 4rem)";
 
@@ -117,13 +118,22 @@ function SpecItem({ value, label }: { value: string; label: string }) {
   );
 }
 
-function KitCard({ img, name, config }: { img: string; name: string; config: string }) {
+function KitCard({
+  img,
+  name,
+  config,
+  pdf,
+}: {
+  img: string;
+  name: string;
+  config: string;
+  pdf: string;
+}) {
   return (
     <Box
       component="a"
-      href={GET_URL}
-      target="_blank"
-      rel="noopener noreferrer"
+      href={pdf}
+      download
       sx={{
         textDecoration: "none",
         color: "inherit",
@@ -405,10 +415,30 @@ export default function Reachy2Page() {
               gap: { xs: 2, md: 3 },
             }}
           >
-            <KitCard img={`${ASSET}/dual-arm-mobile-base.webp`} config="Dual arm + base" name="Dual Arm + Mobile Base" />
-            <KitCard img={`${ASSET}/single-arm-mobile-base.webp`} config="Single arm + base" name="Single Arm + Mobile Base" />
-            <KitCard img={`${ASSET}/dual-arm.webp`} config="Dual arm" name="Dual Arm" />
-            <KitCard img={`${ASSET}/single-arm.webp`} config="Single arm" name="Single Arm" />
+            <KitCard
+              img={`${ASSET}/dual-arm-mobile-base.webp`}
+              config="Dual arm + base"
+              name="Dual Arm + Mobile Base"
+              pdf={`${DATASHEET}/reachy2-dual-arm-mobile-base.pdf`}
+            />
+            <KitCard
+              img={`${ASSET}/single-arm-mobile-base.webp`}
+              config="Single arm + base"
+              name="Single Arm + Mobile Base"
+              pdf={`${DATASHEET}/reachy2-single-arm-mobile-base.pdf`}
+            />
+            <KitCard
+              img={`${ASSET}/dual-arm.webp`}
+              config="Dual arm"
+              name="Dual Arm"
+              pdf={`${DATASHEET}/reachy2-dual-arm.pdf`}
+            />
+            <KitCard
+              img={`${ASSET}/single-arm.webp`}
+              config="Single arm"
+              name="Single Arm"
+              pdf={`${DATASHEET}/reachy2-single-arm.pdf`}
+            />
           </Box>
         </Box>
       </Box>
