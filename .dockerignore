@@ -1,0 +1,10 @@
+node_modules
+.next
+npm-debug.log
+.git
+.DS_Store
+# Legacy Vite apps (superseded by the unified Next.js app)
+apps
+packages
+scripts
+dist

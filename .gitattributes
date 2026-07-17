@@ -1,0 +1,8 @@
+# Media assets are stored as regular git blobs (no LFS) so the GitHub Pages CI
+# checks them out directly - no LFS bandwidth quota, no broken images.
+*.mp4 binary
+*.gif binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
