@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  HF_SPACE_ID: pollen-robotics/pollen-robotics-staging
+  HF_SPACE_ID: pollen-robotics/pollen-robotics-website-staging
 
 jobs:
   deploy:

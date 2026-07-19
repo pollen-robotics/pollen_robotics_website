@@ -83,7 +83,7 @@ Two targets share one codebase, with different triggers:
 - **Hugging Face Space (staging, private)** - published on **every push to
   `main`** by `.github/workflows/deploy-hf-space.yml`. It builds the static
   export and uploads `out/` to the private static Space
-  `pollen-robotics/pollen-robotics-staging` (created automatically on first
+  `pollen-robotics/pollen-robotics-website-staging` (created automatically on first
   run). A daily cron refreshes the baked-in apps catalog here. Requires an
   `HF_TOKEN` repo secret with write access to the `pollen-robotics` org.
 - **GitHub Pages (production, `pollen-robotics.com`)** - **not** deployed on
