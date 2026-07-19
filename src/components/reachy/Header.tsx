@@ -35,8 +35,7 @@ const navItems: NavItem[] = [
   { label: "Get Started", href: `${BASE}/getting-started` },
   { label: "Download", href: `${BASE}/download` },
   { label: "Apps", href: `${BASE}/apps` },
-  // Blog temporarily disabled.
-  // { label: "Blog", href: `${BASE}/blog` },
+  { label: "Blog", href: `${BASE}/blog` },
   { label: "Create", href: "https://huggingface.co/docs/reachy_mini/index", external: true },
   {
     label: "FAQ",

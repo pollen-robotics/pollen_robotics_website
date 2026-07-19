@@ -1,38 +1,13 @@
-import { notFound } from "next/navigation";
-
-export const dynamicParams = false;
-
-// Reachy Mini blog temporarily disabled. `output: export` requires a dynamic
-// route to declare at least one param, so we emit a single throwaway slug that
-// itself 404s; every other slug 404s too (dynamicParams = false). Restore the
-// implementation below to re-enable blog posts.
-export function generateStaticParams() {
-  return [{ slug: "disabled" }];
-}
-
-export default function ReachyBlogPostPage() {
-  notFound();
-}
-
-/* ----------------------------------------------------------------------------
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogPost from "@/components/BlogPost";
 import PageHero from "@/components/reachy/PageHero";
+import ArticleHeroMeta from "@/components/reachy/ArticleHeroMeta";
 import { getPost, getPostSlugs } from "@/lib/blog";
 
 export const dynamicParams = false;
 
-function formatDate(date: string): string {
-  if (!date) return "";
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return date;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pollen-robotics.com";
 
 export function generateStaticParams() {
   return getPostSlugs("reachy-mini").map((slug) => ({ slug }));
@@ -46,10 +21,28 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = getPost("reachy-mini", slug);
   if (!post) return {};
+  const url = `/reachy-mini/blog/${slug}`;
+  const images = post.cover ? [{ url: post.cover }] : undefined;
   return {
     title: post.title,
     description: post.description,
-    alternates: { canonical: `/reachy-mini/blog/${slug}` },
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.description,
+      url,
+      images,
+      publishedTime: post.date || undefined,
+      authors: post.authors.map((a) => a.name),
+      tags: post.tags,
+    },
+    twitter: {
+      card: images ? "summary_large_image" : "summary",
+      title: post.title,
+      description: post.description,
+      images: post.cover ? [post.cover] : undefined,
+    },
   };
 }
 
@@ -61,19 +54,54 @@ export default async function ReachyBlogPostPage({
   const { slug } = await params;
   const post = getPost("reachy-mini", slug);
   if (!post) notFound();
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description || undefined,
+    datePublished: post.date || undefined,
+    image: post.cover ? `${SITE_URL}${post.cover}` : undefined,
+    author: post.authors.map((a) => ({
+      "@type": "Person",
+      name: a.name,
+      url: a.url,
+    })),
+    keywords: post.tags.length ? post.tags.join(", ") : undefined,
+    mainEntityOfPage: `${SITE_URL}/reachy-mini/blog/${slug}`,
+    publisher: { "@type": "Organization", name: "Pollen Robotics" },
+  };
+
   return (
-    <BlogPost
-      title={post.title}
-      date={post.date}
-      source={post.content}
-      hero={
-        <PageHero
-          eyebrow="Blog"
-          title={post.title}
-          subtitle={formatDate(post.date)}
-        />
-      }
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <BlogPost
+        title={post.title}
+        date={post.date}
+        source={post.content}
+        cover={post.cover}
+        authors={post.authors}
+        tags={post.tags}
+        readingTime={post.readingTime}
+        hero={
+          <PageHero
+            eyebrow="Blog"
+            title={post.title}
+            subtitle={post.description}
+            meta={
+              <ArticleHeroMeta
+                authors={post.authors}
+                date={post.date}
+                readingTime={post.readingTime}
+                tags={post.tags}
+              />
+            }
+          />
+        }
+      />
+    </>
   );
 }
----------------------------------------------------------------------------- */

@@ -1,0 +1,118 @@
+<div class="d3-example">
+  <style>
+    .d3-example {
+      background: transparent;
+      color: var(--article-text, #1d1d1f);
+      font-family: var(--font-dm-sans), system-ui, sans-serif;
+    }
+    .d3-example svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .d3-example .bar { transition: opacity 0.15s ease; }
+    .d3-example .bar:hover { opacity: 0.8; }
+    .d3-example .axis text { fill: var(--article-muted, #86868b); font-size: 12px; }
+    .d3-example .axis path,
+    .d3-example .axis line { stroke: var(--article-grid, rgba(0,0,0,0.12)); }
+    .d3-example .value-label { fill: var(--article-muted, #86868b); font-size: 11px; }
+  </style>
+
+  <script>
+    (function () {
+      var container = document.currentScript.parentElement;
+      if (container.dataset.mounted === "true") return;
+      container.dataset.mounted = "true";
+
+      var DATA = [
+        { label: "Home", value: 42 },
+        { label: "Apps", value: 68 },
+        { label: "Buy", value: 31 },
+        { label: "Blog", value: 54 },
+        { label: "Docs", value: 25 },
+      ];
+
+      function ensureD3(cb) {
+        if (window.d3) return cb();
+        var existing = document.getElementById("d3-cdn-script");
+        if (existing) { existing.addEventListener("load", cb); return; }
+        var s = document.createElement("script");
+        s.id = "d3-cdn-script";
+        s.src = "https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js";
+        s.onload = cb;
+        document.head.appendChild(s);
+      }
+
+      function render() {
+        var d3 = window.d3;
+        var width = container.clientWidth || 640;
+        var height = Math.max(220, Math.round(width * 0.42));
+        var margin = { top: 16, right: 12, bottom: 32, left: 36 };
+
+        var palette =
+          window.ColorPalettes && window.ColorPalettes.getColors
+            ? window.ColorPalettes.getColors("categorical", DATA.length)
+            : DATA.map(function () { return "#FF9500"; });
+
+        container.querySelectorAll("svg").forEach(function (el) { el.remove(); });
+
+        var svg = d3
+          .select(container)
+          .append("svg")
+          .attr("viewBox", "0 0 " + width + " " + height)
+          .attr("preserveAspectRatio", "xMidYMid meet");
+
+        var x = d3
+          .scaleBand()
+          .domain(DATA.map(function (d) { return d.label; }))
+          .range([margin.left, width - margin.right])
+          .padding(0.25);
+
+        var y = d3
+          .scaleLinear()
+          .domain([0, d3.max(DATA, function (d) { return d.value; })])
+          .nice()
+          .range([height - margin.bottom, margin.top]);
+
+        svg
+          .append("g")
+          .attr("class", "axis")
+          .attr("transform", "translate(0," + (height - margin.bottom) + ")")
+          .call(d3.axisBottom(x).tickSizeOuter(0));
+
+        svg
+          .append("g")
+          .attr("class", "axis")
+          .attr("transform", "translate(" + margin.left + ",0)")
+          .call(d3.axisLeft(y).ticks(4));
+
+        svg
+          .selectAll(".bar")
+          .data(DATA)
+          .join("rect")
+          .attr("class", "bar")
+          .attr("x", function (d) { return x(d.label); })
+          .attr("y", function (d) { return y(d.value); })
+          .attr("width", x.bandwidth())
+          .attr("height", function (d) { return y(0) - y(d.value); })
+          .attr("rx", 4)
+          .attr("fill", function (d, i) { return palette[i % palette.length]; });
+
+        svg
+          .selectAll(".value-label")
+          .data(DATA)
+          .join("text")
+          .attr("class", "value-label")
+          .attr("text-anchor", "middle")
+          .attr("x", function (d) { return x(d.label) + x.bandwidth() / 2; })
+          .attr("y", function (d) { return y(d.value) - 6; })
+          .text(function (d) { return d.value; });
+      }
+
+      ensureD3(function () {
+        render();
+        if (window.ResizeObserver) {
+          var ro = new ResizeObserver(function () { render(); });
+          ro.observe(container);
+        }
+        window.addEventListener("palettes:updated", render);
+      });
+    })();
+  </script>
+</div>

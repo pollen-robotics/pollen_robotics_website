@@ -145,6 +145,7 @@ export default function PageHero({
   eyebrow,
   title,
   subtitle,
+  meta,
   children,
   stickers = [],
   primitives = [],
@@ -154,6 +155,7 @@ export default function PageHero({
   eyebrow?: string;
   title: string;
   subtitle?: string;
+  meta?: ReactNode;
   children?: ReactNode;
   stickers?: StickerConfig[];
   primitives?: PrimitiveConfig[];
@@ -165,7 +167,10 @@ export default function PageHero({
       sx={{
         background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
         color: "white",
-        pt: { xs: 16, md: 18 },
+        // The shared Pollen strip (44px) sits above the Reachy header, so the
+        // combined chrome is ~44px taller than on the original site. Clear it
+        // with extra top padding to keep the original breathing room.
+        pt: { xs: 22, md: 24 },
         pb: { xs: 10, md: 12 },
         position: "relative",
         overflow: "visible",
@@ -280,6 +285,8 @@ export default function PageHero({
             {subtitle}
           </Typography>
         )}
+
+        {meta && <Box sx={{ mt: subtitle ? 1 : 3 }}>{meta}</Box>}
 
         {children && (
           <Stack direction="row" spacing={2} useFlexGap sx={{ justifyContent: "center", flexWrap: "wrap" }}>

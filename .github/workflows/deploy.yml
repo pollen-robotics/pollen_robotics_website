@@ -1,12 +1,13 @@
-name: Deploy to GitHub Pages
+name: Deploy to production (GitHub Pages)
 
+# Production (pollen-robotics.com) is NOT deployed on every push to main.
+# It ships only when the dedicated `production` branch is updated, e.g.:
+#   git push origin main:production
+# `workflow_dispatch` is kept as a manual escape hatch (Actions > Run workflow).
 on:
   push:
-    branches: [main]
+    branches: [production]
   workflow_dispatch:
-  # Rebuild daily so the statically-baked Reachy Mini app catalog stays fresh.
-  schedule:
-    - cron: "0 4 * * *"
 
 # Allow the workflow to publish to GitHub Pages.
 permissions:

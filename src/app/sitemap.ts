@@ -10,11 +10,11 @@ const SITE_URL =
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  // The Reachy Mini blog is temporarily disabled - excluded here.
   const staticRoutes = [
     "/",
     "/reachy-2",
     "/reachy-mini",
+    "/reachy-mini/blog",
     "/blog",
   ].map((route) => ({
     url: `${SITE_URL}${route}`,
@@ -26,5 +26,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
   }));
 
-  return [...staticRoutes, ...pollenPosts];
+  const reachyPosts = getPostSlugs("reachy-mini").map((slug) => ({
+    url: `${SITE_URL}/reachy-mini/blog/${slug}`,
+    lastModified: now,
+  }));
+
+  return [...staticRoutes, ...pollenPosts, ...reachyPosts];
 }

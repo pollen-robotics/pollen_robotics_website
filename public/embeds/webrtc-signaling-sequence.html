@@ -1,0 +1,110 @@
+<div class="seqx" data-mounted="false">
+  <div class="seqx-holder"></div>
+  <style>
+    .seqx {
+      --seq-c0: #14b8a6; --seq-c1: #8b7cf0; --seq-c2: #e8973c;
+      position: relative; width: 100%; margin: 6px 0; box-sizing: border-box;
+      color: var(--text-color, #1a1a1a); background: transparent;
+    }
+    .seqx-holder svg { display: block; width: 100%; height: auto; overflow: visible; }
+    /* Neutralise the wide-mode fade mask ONLY for figures holding this diagram,
+       so the last row is never clipped (other wide embeds keep their mask). */
+    .html-embed--wide:has(.seqx) { -webkit-mask: none !important; mask: none !important; }
+    .seqx-part rect { fill: var(--primary-color); fill-opacity: .1; stroke: var(--primary-color); stroke-opacity: .35; stroke-width: 1.2; }
+    .seqx-part text { font-size: 14px; font-weight: 650; fill: currentColor; }
+    .seqx-life { stroke: currentColor; stroke-opacity: .16; stroke-width: 1; stroke-dasharray: 2 4; }
+    .seqx-msg { stroke: currentColor; stroke-opacity: .5; stroke-width: 1.4; fill: none; }
+    .seqx-msg.dashed { stroke-dasharray: 5 4; stroke-opacity: .4; }
+    .seqx-msg.accent { stroke: var(--seq-c1); stroke-opacity: .9; stroke-width: 2; stroke-dasharray: none; }
+    .seqx-lab { font-size: 12px; font-weight: 600; fill: currentColor; fill-opacity: .85; }
+    .seqx-lab.accent { fill: var(--seq-c1); fill-opacity: 1; font-weight: 700; }
+    .seqx-note rect { fill: var(--seq-c1); fill-opacity: .08; stroke: var(--seq-c1); stroke-opacity: .35; stroke-width: 1; }
+    .seqx-note text { font-size: 12px; font-weight: 600; fill: currentColor; fill-opacity: .7; }
+  </style>
+  <script>
+    (() => {
+      const root = document.currentScript.closest('.seqx');
+      if (!root || root.dataset.mounted === 'true') return;
+      root.dataset.mounted = 'true';
+      const holder = root.querySelector('.seqx-holder');
+      const uid = 'sig';
+
+      const participants = [
+        { label: "Client (SDK)" },
+        { label: "Signaling central" },
+        { label: "Robot daemon" },
+      ];
+      const rows = [
+        { from: 2, to: 1, text: "register (I'm online)" },
+        { from: 0, to: 1, text: "list robots (with HF token)" },
+        { from: 1, to: 0, text: "available robots", dashed: true },
+        { from: 0, to: 1, text: "WebRTC offer" },
+        { from: 1, to: 2, text: "forward offer" },
+        { from: 2, to: 1, text: "WebRTC answer + ICE" },
+        { from: 1, to: 0, text: "forward answer + ICE", dashed: true },
+        { from: 0, to: 2, text: "direct WebRTC link (audio + video + data)", dashed: true, accent: true },
+        { note: true, over: [0, 2], text: "central is no longer involved" },
+      ];
+
+      const W = 820, padL = 120;
+      const n = participants.length;
+      const gap = n > 1 ? (W - 2 * padL) / (n - 1) : 0;
+      const X = participants.map((_, i) => padL + i * gap);
+      const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+      const headerTop = 14, headerH = 36, lifeTop = headerTop + headerH + 12;
+      let y = lifeTop + 30;
+      const drawn = [];
+      rows.forEach((r) => {
+        if (r.note) {
+          const a = X[Math.min(...r.over)], b = X[Math.max(...r.over)];
+          const mid = (a + b) / 2;
+          const wNote = Math.max((b - a) + 36, r.text.length * 6.8 + 28);
+          const x1 = Math.max(6, mid - wNote / 2), x2 = Math.min(W - 6, mid + wNote / 2);
+          drawn.push(`<g class="seqx-note"><rect x="${x1.toFixed(1)}" y="${(y - 15).toFixed(1)}" width="${(x2 - x1).toFixed(1)}" height="30" rx="9"></rect><text x="${((x1 + x2) / 2).toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="middle">${esc(r.text)}</text></g>`);
+          y += 52;
+        } else {
+          const x1 = X[r.from], x2 = X[r.to];
+          const cls = `seqx-msg${r.dashed ? " dashed" : ""}${r.accent ? " accent" : ""}`;
+          const mk = r.accent ? `url(#seqx-ah-a-${uid})` : `url(#seqx-ah-${uid})`;
+          drawn.push(`<line class="${cls}" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" marker-end="${mk}"></line>`);
+          drawn.push(`<text class="seqx-lab${r.accent ? " accent" : ""}" x="${((x1 + x2) / 2).toFixed(1)}" y="${(y - 9).toFixed(1)}" text-anchor="middle">${esc(r.text)}</text>`);
+          y += 42;
+        }
+      });
+      const contentBottom = y - 14;
+      const boxTop = contentBottom + 12;
+      const H = boxTop + headerH + 18;
+
+      const headerAt = (yTop) => participants.map((p, i) => {
+        const cx = X[i];
+        return `<g class="seqx-part"><rect x="${(cx - 76).toFixed(1)}" y="${yTop}" width="152" height="${headerH}" rx="10"></rect>`
+          + `<text x="${cx}" y="${(yTop + headerH / 2 + 4).toFixed(1)}" text-anchor="middle">${esc(p.label)}</text></g>`;
+      }).join("");
+      const headers = headerAt(headerTop) + headerAt(boxTop);
+      const lifelines = X.map((cx) => `<line class="seqx-life" x1="${cx}" y1="${lifeTop}" x2="${cx}" y2="${boxTop}"></line>`).join("");
+
+      const defs = `<defs>`
+        + `<marker id="seqx-ah-${uid}" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0.5,0.5 L6.5,3 L0.5,5.5 Z" fill="currentColor" fill-opacity="0.55"></path></marker>`
+        + `<marker id="seqx-ah-a-${uid}" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0.5,0.5 L6.5,3 L0.5,5.5 Z" fill="var(--seq-c1)"></path></marker>`
+        + `</defs>`;
+
+      holder.innerHTML = `<svg viewBox="0 0 ${W} ${H.toFixed(0)}" width="100%" role="img" aria-label="Signaling handshake: the robot registers with the central, the client lists robots and swaps a WebRTC offer/answer through the central, then talks directly to the robot. The central is no longer involved.">${defs}${lifelines}${headers}${drawn.join("")}</svg>`;
+
+      const applyPalette = () => {
+        try {
+          const cats = window.ColorPalettes && window.ColorPalettes.getColors
+            ? window.ColorPalettes.getColors('categorical', 6) : null;
+          if (cats && cats.length >= 5) {
+            root.style.setProperty('--seq-c0', cats[0]);
+            root.style.setProperty('--seq-c1', cats[2]);
+            root.style.setProperty('--seq-c2', cats[4]);
+          }
+        } catch (e) {}
+      };
+      applyPalette();
+      window.addEventListener('palettes:updated', applyPalette);
+      new MutationObserver(applyPalette).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    })();
+  </script>
+</div>

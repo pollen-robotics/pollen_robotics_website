@@ -1,0 +1,713 @@
+---
+title: "One Protocol to Move Them All"
+description: "A deep dive into the Reachy Mini stack: one WebRTC connection carrying audio, video and motor control, local or remote, and the signaling, SDK and embedding layers on top of it that let anyone - or their coding agent - build and share robot apps in minutes."
+date: "2026-06-14"
+authors:
+  - name: "Thibaud Frere"
+    url: "https://huggingface.co/tfrere"
+  - name: "Clément Dussieux"
+    url: "https://huggingface.co/cdussieux"
+tags:
+  - "Engineering"
+  - "WebRTC"
+  - "SDK"
+---
+
+## Introduction
+
+[Reachy Mini](https://huggingface.co/blog/reachy-mini) is a small, expressive,
+open-source robot: a head that moves on six degrees of freedom, two animated
+antennas, a microphone, a speaker and a camera. On paper it is a desktop
+companion. In practice it has become something more interesting: a *platform*
+that anyone can build for, in minutes, often without writing a single line of code.
+
+This article is about the software decisions that made this possible. The main
+one is simple to state: apps no longer have to run *on* the robot. They started
+as Python programs installed next to the daemon - on the robot's own Raspberry
+Pi for the wireless version - and that model is still there and still makes
+sense when code belongs close to the hardware. What is new is
+that an app can now also be plain JavaScript running in whatever client you
+already have open - a browser tab, the mobile app, a Hugging Face Space -
+because the robot exposes everything it can do over the network:
+
+<Note variant="info" emoji="📡" title="The thesis">
+Seen from a client, Reachy Mini is an endpoint you <strong>connect</strong> to:
+audio, video and motor control travel over a single WebRTC connection that
+works the same whether you are next to the robot or on the other side of the
+planet.
+</Note>
+
+The two halves depend on each other. Apps can only live client-side because one
+low-latency connection carries everything the robot can do, across networks.
+And the single connection is only interesting because the code consuming it
+runs anywhere a browser runs. Put together: streaming the robot's microphone to
+a realtime speech model is the same primitive as nudging its head 5 degrees to
+the left, and running an app on your laptop is the same as running it from a
+phone, or from a Hugging Face Space someone vibe-coded an hour ago - with
+nothing to install on the robot.
+
+<Sidenote>
+"Vibe-coding" here means describing what you want in natural language and
+letting an AI agent generate the working app - UI, robot control and all.
+</Sidenote>
+
+In the pages that follow we will trace that idea through the whole stack:
+
+- **WebRTC for everything** - less is more.
+- **The signaling central and the SDK** - how two clients find each other
+  and shake hands, then get out of the way.
+- **The connection in action** - four real apps, each leaning on a
+  different leg of the same link.
+- **Interchangeable clients** - why a browser, the mobile app, and a
+  community Space are all the same kind of consumer.
+- **Apps and the app catalogue** - how third-party apps run safely inside
+  the official clients.
+- **The vibe-coding loop** - the Reachy Mini vibe coder, coding agents,
+  and AI-generated personalities.
+
+## WebRTC for everything
+
+Here is the whole ecosystem on one page. Hardware on the left, software in the
+middle, and the clients that talk to the robot on the right. The arrow labelled
+**"via WebRTC - Local OR Internet"** is the one this article is about.
+
+<HtmlEmbed
+  frameless
+  src="webrtc-ecosystem-diagram.html"
+  title="The Reachy Mini ecosystem"
+  caption="Every client - browser, mobile app, or a Hugging Face Space - reaches the robot's daemon through one WebRTC connection, brokered by the signaling central. The same link carries audio, video and the data channel used for motor control. Hover a highlighted box to open its repository."
+/>
+
+Here we follow the connection flow. (The diagram is interactive: hover a highlighted box to open its
+repository or Space.)
+
+### The old way: one channel per problem
+
+Before the consolidation, each capability of the robot was reached through its
+own transport, each with its own failure modes:
+
+- **HTTP/REST and WebSockets** for commands and state, which is fine for "set
+  this value" but awkward for anything streaming or real-time.
+- **Separate media paths** for audio and video, each with its own codecs,
+  latency and synchronization issues.
+- **Local-only assumptions**: most of it required the client to sit on the
+  same network as the robot.
+
+Every new feature meant picking a channel, gluing it to the others, and
+re-solving reconnection and security for that specific path. The hard parts
+were paid for again and again.
+
+<Note variant="neutral" emoji="📶" title="What did not change: BLE">
+One transport survived on purpose. First-boot setup - discovering the robot,
+getting it onto your Wi-Fi, pushing recovery updates - still happens over
+Bluetooth Low Energy from the mobile app, because it has to work before the
+robot has any network at all. WebRTC takes over once the robot is online.
+</Note>
+
+### The new model: one connection, three payloads
+
+<Glossary term="WebRTC" definition="Web Real-Time Communication: a browser-native standard for peer-to-peer audio, video and arbitrary data, with built-in NAT traversal, encryption and congestion control."> WebRTC</Glossary>
+replaces the patchwork with a single peer-to-peer connection that natively
+carries three kinds of payload at once:
+
+<Stack layout="3-column" gap="medium">
+  <Note variant="neutral" emoji="🎙️" title="Audio">
+  The robot's microphone goes up to a realtime speech model; the model's voice
+  comes back down to the robot's speaker. Same connection.
+  </Note>
+  <Note variant="neutral" emoji="📷" title="Video">
+  The camera feed is available on demand for vision - "look at what I'm
+  holding" - without standing up a second pipeline.
+  </Note>
+  <Note variant="neutral" emoji="🎛️" title="Data channel">
+  Head poses, antenna moves and recorded choreographies stream over the WebRTC
+  data channel, coalesced to a steady rate.
+  </Note>
+</Stack>
+
+Moving a motor and streaming a voice become the same kind of operation: frames
+on one link. And the properties that used to be re-implemented per channel come
+with the standard: NAT traversal so the connection forms across networks,
+DTLS/SRTP encryption, and congestion control so quality degrades before the
+connection drops.
+
+<Note variant="info" emoji="🌍" title="Local OR Internet, transparently">
+WebRTC negotiates the best path between the two peers, so the same code
+connects over your LAN when you are in the room and relays over the internet
+when you are not. The application never knows which one it got.
+</Note>
+
+### What this buys
+
+Some of the payoff is direct simplification: there is one connection to open,
+secure and monitor instead of three or four.
+
+- A realtime conversation is "subscribe to audio in both directions".
+- A vision feature is "grab a frame from the video track".
+- A dance is "push a sequence of poses onto the data channel".
+- Reconnection, encryption and NAT traversal are solved once, not once per
+  channel.
+
+And some of it is new freedom: since any browser can open a WebRTC connection,
+app code no longer has to live on the robot. A phone, a laptop and a generated
+web page connect identically, and heavy processing - a vision model, an audio
+pipeline - can run on the client's hardware instead of the Pi.
+
+One piece has to exist *before* the WebRTC link can form: something to
+introduce the two peers. That is the signaling central, covered next.
+
+## The signaling central and the SDK
+
+A WebRTC connection is peer-to-peer, but the two peers still need a way to find
+each other and exchange the initial connection details. That job belongs to the
+**signaling central**
+([reachy_mini_central](https://huggingface.co/spaces/pollen-robotics/reachy_mini_central)),
+a small Hugging Face Space that does three things:
+
+1. **Registration** - each robot's daemon announces itself to the central
+   and stays reachable through it, even behind a home router.
+2. **Discovery** - an authenticated client asks "which robots can I use?"
+   and gets back the list tied to its Hugging Face account.
+3. **Handshake relay** - the client and the robot swap their WebRTC offer,
+   answer and ICE candidates through the central, just long enough to establish
+   the direct link.
+
+Once the peer connection is up, the central is out of the loop: audio, video
+and motor commands flow directly between client and robot, and never through
+it.
+
+<HtmlEmbed
+  src="webrtc-signaling-sequence.html"
+  frameless
+/>
+
+<Note variant="info" emoji="🔑" title="Auth rides on Hugging Face">
+Discovery is gated by the user's Hugging Face token, so a client only ever sees
+the robots that belong to its account. There is no long-lived robot password to
+leak; identity is the same one you already use across the Hub.
+</Note>
+
+### The SDK hides all of it
+
+App authors never touch any of the above. The JavaScript SDK (which lives in
+the [reachy_mini](https://github.com/pollen-robotics/reachy_mini) repo) wraps the whole bring-up behind a single call:
+
+```js
+const robot = new ReachyMini();
+await robot.autoConnect(); // auth + discovery + session + wake-up
+```
+
+`autoConnect()` performs the OAuth check, connects to the central, picks the
+robot (automatically if there is exactly one free, otherwise via a callback the
+app supplies), starts the session, and wakes the robot up. The earlier
+multi-step chain - connect, wait for `robotsChanged`, `startSession`,
+`ensureAwake` - is one method now.
+
+<Sidenote>
+Because the SDK is plain JavaScript, the exact same package runs in a desktop
+browser, inside the mobile app's WebView, and inside an embedded Space iframe.
+</Sidenote>
+
+After that, driving the robot is a few method calls that the SDK serializes onto the
+WebRTC data channel:
+
+```js
+await robot.moveHead({ pitch: 0.1, yaw: -0.2 });
+await robot.playMove("happy");
+const frame = await robot.look(); // one camera frame for vision
+```
+
+<Accordion title="Standalone vs embedded apps (the iframe case)">
+An app can run **standalone** (the user opens its Space URL directly) or
+**embedded** in a host shell - the mobile app, or the vibe coder's live
+preview. Hugging Face blocks its OAuth page from being framed
+(`X-Frame-Options: SAMEORIGIN`), so logging in *inside* an iframe is impossible.
+
+The host solves this by pre-authenticating and pre-selecting a robot, then
+handing both to the embed through the iframe URL (and, for cross-origin hosts,
+via `postMessage`). The SDK auto-detects embed mode and consumes those
+credentials, so `autoConnect()` behaves identically in both cases. App authors
+write one code path; the SDK absorbs the difference.
+</Accordion>
+
+### The animation library: motion that doesn't fight you
+
+Pushing a pose onto the data channel is easy. Making motion that looks *alive*,
+and that always returns the robot to a safe state, is the hard part - and it is
+exactly the part most app authors should not have to reinvent. So the SDK ships
+a dedicated, pure-TypeScript **animation library**
+(`@pollen-robotics/reachy-mini-sdk/animation`) for it.
+
+<Note variant="info" emoji="🎞️" title="Client-side math, no new primitives">
+The library adds no daemon feature. Everything still routes through the same
+WebRTC data-channel commands - it is math and ergonomics on top of the
+connection that already exists.
+</Note>
+
+The surface is small:
+
+- **Pose types** (`Pose`, `PartialPose`) - the exact wire format every motion
+  call already speaks.
+- **A canonical safe-rest pose** (`INIT_POSE`) - a mirror of the daemon's own
+  rest pose, so "go home" is one constant, not a magic number per app.
+- **Distance math** (`distanceBetweenPoses`, `scaledDuration`) - "how big is
+  this move?" and "how long should it take?", computed synchronously on the
+  client, so an app can line up audio, scheduling and head motion against the
+  same numbers.
+- **Safe exit handlers** (`safelyReturnToPose`, `installShutdownHandler`) -
+  wired to `pagehide` / `beforeunload` / the host's `onLeave`.
+
+```ts
+import {
+  INIT_POSE,
+  scaledDuration,
+  installShutdownHandler,
+} from "@pollen-robotics/reachy-mini-sdk/animation";
+
+// Auto-time a move from how far it has to travel...
+const { duration } = scaledDuration(current, target);
+await robot.gotoTarget(target, duration);
+
+// ...and always leave the robot in a safe pose when the app exits.
+installShutdownHandler(robot);
+```
+
+<Note variant="success" emoji="🛡️" title="Safe exit by default">
+No matter how an app ends - tab closed, host navigated away, crash - the robot
+eases back to its rest pose instead of freezing mid-gesture. On a platform of
+third-party apps, that guarantee has to live in shared infrastructure, not in
+each app.
+</Note>
+
+A second phase is on the roadmap: a game-engine-style **animation graph** with
+named layers, masking and crossfades, so an app can declaratively express
+"keep a gentle speech sway *while* a dance plays" instead of juggling boolean
+state flags. The pose types and distance math shipping today are its foundation.
+
+## The connection in action
+
+One transport, a central that introduces two peers and steps aside, an SDK that
+reduces bring-up to `autoConnect()`. The fastest way to see what that buys is
+to look at what people have already built on it: small, focused apps, each
+leaning on a different leg of the same connection.
+
+<Note variant="info" emoji="🧩" title="One SDK, one shell, four different apps">
+Every app below is a plain Hugging Face Space (tagged <code>reachy_mini_js_app</code>)
+that mounts the host shell, receives a connected <code>ReachyMini</code> instance,
+and does one thing. None of them adds a daemon feature - they recombine the
+audio, video and data legs that already exist.
+</Note>
+
+### Driving a robot from anywhere: telepresence
+
+The **Telepresence** app turns the robot into a live remote terminal: its camera
+edge-to-edge, bidirectional audio, and an on-screen joystick that steers the head
+(yaw + pitch) and lets the body yaw take over once the head reaches its mechanical
+edge. No AI in the loop - an operator and a robot, possibly on opposite sides of
+the planet.
+
+This is the *local OR internet* claim from earlier, made concrete. The same
+Space, the same `autoConnect()`, drives a robot on your desk over the LAN or one
+in another country over a relayed link - and the app never learns which one it
+got.
+
+The audio path shows how little the app has to do. Robot-to-you comes free:
+attaching the robot's video element pulls its audio along with it. You-to-robot
+is the only thing the app owns, and even that is a single track swap:
+
+```ts
+// The SDK keeps a silent placeholder on the audio sender so the
+// sendrecv m-line survives SDP negotiation; we swap in the real mic.
+const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+const sender = reachy._pc.getSenders().find((s) => s.track?.kind === "audio");
+await sender.replaceTrack(mic.getAudioTracks()[0]); // no renegotiation
+```
+
+<Sidenote>
+The exact same <code>replaceTrack</code> move is how the conversation apps route a
+realtime speech model's voice to the robot's speaker. Only the source of the track
+differs: a phone mic here, an LLM's audio output there.
+</Sidenote>
+
+### Seeing through the robot: head tracking
+
+The **Head Tracking** app makes the robot follow the closest face, using the
+video leg as a continuous stream rather than a one-shot frame grab. The camera
+arrives over WebRTC, MediaPipe BlazeFace (WASM, on the CPU, in the browser)
+detects faces at 10-15 fps, and a linear mapping turns the face's position in
+the image into a `(yaw, pitch)` target streamed back at ~30 Hz.
+
+```ts
+const target = imageCenterToHeadTarget(faceCenter);
+reachy.setHeadRpyDeg(0, target.pitch, target.yaw);
+```
+Because the camera sits in the head, every command re-centres the face in the
+frame: the loop closes through the physical world, with the detector running on
+your machine and only angles crossing the network.
+
+### Creating motion: emotions and marionette
+
+Earlier chapters mentioned `playMove("happy")` and "recorded choreographies"
+without saying where they come from. Two apps close that gap, and together they
+form the same create-and-share loop as apps - but for *movement*.
+
+<Stack layout="2-column" gap="large">
+  <Note variant="neutral" emoji="💜" title="Emotions: play it back">
+  A Plutchik wheel of 79 moves drawn from a public HF dataset. Tap one and its
+  trajectory - head pose, antennas and body yaw, sampled at 50-100 Hz - streams
+  frame by frame over the data channel via <code>set_full_target</code>, with a
+  companion sound played in the browser. Pure dataset playback, no AI.
+  </Note>
+  <Note variant="neutral" emoji="🎭" title="Marionette: record it">
+  Runs the data channel the other way. Relax the motors (the daemon's
+  gravity-compensation mode), pose the robot by hand, and it captures the
+  trajectory; replay it with synced audio, then share it to a Hugging Face
+  dataset. A Discover tab pulls every dataset tagged
+  <code>reachy_mini_community_moves</code>.
+  </Note>
+</Stack>
+
+<Note variant="success" emoji="📦" title="The motion library is just data on the Hub">
+Recorded moves live as plain JSON - timed frames of
+<code>&#123; head, antennas, body_yaw &#125;</code> - in Hugging Face datasets, and
+they play back with no daemon change, because the daemon already interpolates
+<code>set_full_target</code> frames when the network jitters. Creating, sharing and
+remixing robot motion is the same publish-to-the-Hub gesture as shipping an app.
+</Note>
+
+### The common thread
+
+Telepresence, head tracking, emotions and marionette look like four different
+products, but architecturally they are identical: a Space that mounts the host
+shell, receives one connected robot, and uses whichever legs of the WebRTC link
+it needs - audio, video, the data channel, or all three. None needed a custom
+protocol, a daemon change, or anything installed on the robot.
+
+## Clients are interchangeable
+
+If every client opens the same WebRTC connection through the same SDK, then no
+single client is special. The browser demo, the official mobile app, and a
+community-built Space are all *consumers* of the robot. They differ in
+packaging, not in how they talk to the hardware.
+
+The whole platform fits in one picture: several ways to *reach* a robot on the
+left, a single SDK speaking WebRTC in the middle, and two hardware variants on
+the right - the same connection working both on the local network and across
+the internet.
+
+<HtmlEmbed
+  src="webrtc-stack-overview.html"
+  title="One SDK, one transport, many clients"
+  caption="Browser and mobile clients converge on a single WebRTC SDK that drives either Reachy Mini variant, locally or over the internet."
+/>
+
+| Client | What it is | How it connects |
+|--------|-----------|-----------------|
+| **Browser** | A web page using the SDK directly | `autoConnect()` over WebRTC |
+| **Mobile app** | A native shell wrapping a web frontend | same SDK, same WebRTC |
+| **Apps** | Hugging Face Spaces, run standalone or embedded | same SDK, same WebRTC |
+
+### The mobile app is "just a client" too
+
+The mobile app is the most polished consumer, and a good test of the principle.
+Under the hood it is a **Tauri 2** shell (a thin Rust layer) wrapping a
+**React 19** frontend - not a React Native rewrite. The robot-facing logic is
+the same JS SDK every other client bundles; the native layer adds only what a
+phone needs: app-store packaging, system OAuth, screen wake-lock, and
+Bluetooth.
+
+<Note variant="neutral" emoji="📱" title="The one native exception: setup">
+Bluetooth is where "just a client" stops being literally true. First-boot
+setup - finding the robot, provisioning it onto your Wi-Fi, pushing recovery
+updates - runs over BLE from the app, because it has to work before the robot
+has a network. Once the robot is online and registered with the central,
+everything else the app does - conversation, joystick, camera, launching Hub
+apps - is the same WebRTC connection as everyone else's.
+</Note>
+
+### Why interchangeability matters
+
+Treating clients as interchangeable has consequences beyond engineering
+convenience:
+
+- **No lock-in to one UI.** The official clients are reference implementations,
+  not gatekeepers. Anything that can run the SDK can drive the robot.
+- **Apps are first-class.** A Space someone published is not a second-class
+  citizen poking at a limited API - it has the same access as the official
+  app, because it opens the same connection.
+- **Handoff is cheap.** The mobile app can release its session, let an embedded
+  app take over the robot, and reacquire it afterwards, because a session is a
+  uniform, transferable thing.
+
+That third point - an official client temporarily handing the robot to a
+third-party app - is where the platform opens up, and where safety has to be
+taken seriously. The next section covers how apps are catalogued, embedded and
+filtered.
+
+## Apps, the catalogue, and safe embedding
+
+The apps this section is about are Hugging Face Spaces that use the JS SDK -
+static files served from the Hub, running in the client that loads them, with
+nothing installed on the robot or on the phone. Because each app declares
+itself with a single Space tag (<code>reachy_mini_js_app</code> in its
+<code>README.md</code>), it can be discovered, embedded and handed the live
+robot - running one is just loading a page.
+
+### The app catalogue
+
+The directory of available apps is served by a small API - the
+[reachy-mini-api](https://huggingface.co/spaces/pollen-robotics/reachy-mini-api)
+Space - which clients query for the list of installable apps, with metadata and
+filtering. The data behind it lives in the
+[reachy_mini_store_data](https://huggingface.co/datasets/pollen-robotics/reachy_mini_store_data)
+dataset. Pair that with the community convention of publishing Reachy Mini apps
+as searchable Spaces on the Hub, and you get a store anyone can contribute to.
+
+<Note variant="info" emoji="🗂️" title="Curation, not gatekeeping">
+The catalogue is driven by a few configuration lists in the dataset:
+<code>official-app-list.json</code> (the trusted, featured apps),
+<code>blocked-app-list.json</code> (apps removed from circulation), and
+<code>taxonomy.json</code> (how apps are categorised). Publishing is open;
+curation keeps the surface navigable.
+</Note>
+
+### Running an app inside a client
+
+When you open an app from within the mobile app or the web client, it does not
+launch a separate program - it loads the app's Space in a sandboxed
+**iframe** and hands the robot over:
+
+<HtmlEmbed
+  src="webrtc-app-handoff-sequence.html"
+  frameless
+/>
+
+The host releases its WebRTC slot, loads the app with an `embedded` flag, and
+forwards the user's Hugging Face token so the embedded app can connect without
+showing another login screen. When the user closes the app, the host reacquires
+the robot. None of this would work that easily with installed programs: the handoff exists
+because an app is a page any iframe can load, and a session is a thing that can
+be released and picked back up.
+
+<Sidenote>
+The token is passed via the iframe URL or <code>postMessage</code>; it is a
+short-lived user credential, never a robot secret. This is the same mechanism
+the vibe coder's live preview uses.
+</Sidenote>
+
+### The host shell: any app, any browser, one login
+
+The mobile app is one way to reach apps, but not the only one. The same handoff
+machinery is packaged as a standalone **host shell** - published as the
+[reachy-mini-host](https://huggingface.co/spaces/tfrere/reachy-mini-host) Space
+and shipped in the SDK as `mountHost()`. It turns any plain browser into a
+fully-featured Reachy Mini client.
+
+<Note variant="info" emoji="🌐" title="One shell, every app, one sign-in">
+Open the host in a browser, point it at any community app with
+<code>?app=&lt;owner&gt;/&lt;space&gt;</code>, and it runs that app fully
+connected to your robot - no mobile app, and no separate login per app. The
+host owns Hugging Face OAuth, the robot picker and the session lifecycle
+<em>once</em>, then lends that connection to whatever app you load.
+</Note>
+
+Instead of every app re-implementing sign-in, robot discovery and connection
+handling, the host does all of it and hands the running app a ready-to-use
+`ReachyMini` instance. App authors ship only their app; the shell provides the
+plumbing.
+
+```ts
+// host.ts - the entire shell, for any app
+import { mountHost } from "@pollen-robotics/reachy-mini-sdk/host/auto";
+mountHost({ appName: "My App", appIconUrl: "/icon.svg" });
+
+// embed.ts - what runs inside the iframe, already connected
+import { connectToHost } from "@pollen-robotics/reachy-mini-sdk/host/embed";
+const handle = await connectToHost();
+handle.reachy.setHeadRpyDeg(0, 10, 0);
+```
+
+The shell renders the top bar, the sign-in screen, the robot picker and the
+connecting / leaving overlays; the embed wakes the robot and drives it. The
+exact same app code runs **standalone in a browser tab** (full OAuth ->
+picker -> iframe) and **embedded in the mobile app** (credentials pre-injected,
+no picker) - only the entry point differs.
+
+<Wide>
+<Stack layout="2-column" gap="large">
+<Video src="/videos/app-mobile-mode.mp4"><strong>Mobile mode</strong> - the app embedded in the mobile app, credentials pre-injected, no picker.</Video>
+<Video src="/videos/app-shell-mode.mp4"><strong>Shell mode</strong> - the same app in the host shell in a plain browser, full OAuth and robot picker.</Video>
+</Stack>
+</Wide>
+
+Because the host is "just a Space", you can share a link to any app the same way
+you share a web page - the recipient signs in with their own Hugging Face
+account and uses their own robot.
+
+### The harmful-content filter
+
+Handing a real, moving robot to arbitrary third-party code needs guardrails.
+The ecosystem includes an **LLM harmful-content filter** that screens app
+content against a taxonomy and marks it `ALLOWED` or blocked before it reaches
+users. Combined with the blocklist, it keeps publishing as easy as pushing a
+Space while keeping clearly unsafe or abusive content out of the official
+clients.
+
+With this machinery in place, the loop closes: an ordinary person can describe
+an app, have an AI write it, preview it on their real robot, and publish it to
+the catalogue. That loop is the next section.
+
+## The vibe-coding loop
+
+Everything so far - one transport, a central that steps aside, an SDK that
+hides the plumbing, interchangeable clients, a safe way to embed apps - adds up
+to make one thing possible: letting a person go from *an idea in plain
+language* to *a running app on a real robot* in minutes. There are three ways to
+use that, and they sit on the same foundation.
+
+### 1. The Reachy Mini vibe coder
+
+The [**Reachy Mini vibe coder**](https://huggingface.co/spaces/tfrere/reachy-mini-vibe-coding-apps)
+is a conversational agent whose entire job is to write small robot apps with
+you. You describe what you want; it produces the files; you watch it run on
+your actual robot; you publish. The deliberate constraint is what makes the
+loop work:
+
+<Note variant="info" emoji="🎯" title="One artifact, no build step">
+The agent only ever produces a <strong>3-file static Space</strong> -
+<code>index.html</code>, <code>main.js</code>, <code>README.md</code> -
+with no npm, no Docker, and no server secrets beyond the auto-injected HF OAuth.
+Whatever previews green is exactly what ships.
+</Note>
+
+Architecturally it is itself a small web app: a Vite + React frontend
+(chat panel, a Monaco editor over an in-memory file tree, and a sandboxed
+preview iframe) talking to a Hono + Vercel AI SDK backend that streams the
+agent's edits. The agent is grounded in a `reachy-mini-app` skill that ships the
+reference template plus concept-level robot knowledge - degrees of
+freedom, safety limits, `goto` vs `setTarget`, antennas-as-buttons, the daemon
+API - so it writes code that respects the hardware.
+
+The loop:
+
+<Stack layout="auto" gap="medium">
+  <Note variant="neutral" emoji="💬" title="Describe">
+  Ask for an app in natural language.
+  </Note>
+  <Note variant="neutral" emoji="🛠️" title="Generate">
+  The agent writes the three files into a virtual file system.
+  </Note>
+  <Note variant="neutral" emoji="👀" title="Preview">
+  The sandboxed iframe runs the app against your real robot, live.
+  </Note>
+  <Note variant="neutral" emoji="🚀" title="Publish">
+  One click pushes a new HF Space under your account.
+  </Note>
+</Stack>
+
+The preview step is where the whole architecture pays off at once. The vibe
+coder injects your Hugging Face token into the preview iframe, the generated
+app calls `autoConnect()`, and within seconds code that did not exist a moment
+ago is driving the head and antennas of a physical robot. No deploy, no
+flashing, nothing installed anywhere - because the app runs in the iframe, not
+on the robot.
+
+<Note variant="success" emoji="♻️" title="Write once, run in four places">
+Because the generated apps share one small bootstrap, the same three files
+run <strong>standalone</strong>, inside the vibe coder's <strong>preview
+iframe</strong>, inside the <strong>mobile app</strong>, and inside the shared
+<strong>host shell</strong>. The embedding contract from the previous section is
+what makes "preview" and "ship" the same artifact.
+</Note>
+
+### 2. Vibe-code with your own agent
+
+If you would rather stay in your editor, the project meets you there. Point
+any coding agent - Claude Code, Codex, Copilot - at the repo's
+`AGENTS.md` and describe your idea:
+
+> *I'd like to create a Reachy Mini app. Start by reading
+> [AGENTS.md](https://github.com/pollen-robotics/reachy_mini/blob/main/AGENTS.md).
+> I want my app to do [your idea here].*
+
+That guide hands the agent the SDK patterns, best practices, example apps and a
+golden-path scaffold (`create-js-app`). Same destination - a Space that uses
+the SDK over WebRTC - reached through your own tools, with full control over
+the code.
+
+<Sidenote>
+The hosted vibe coder is the fastest path; bringing your own agent is the most
+flexible. Both produce apps that are first-class citizens of the same ecosystem.
+</Sidenote>
+
+### 3. Vibe-coding the robot's *behaviour*
+
+The same idea - describe it, let an LLM generate it - applies not just to
+*apps* but to the robot's *personality*. In the mobile app, you can type a
+one-line vibe like *"a grumpy French chef who insults your cooking"* and an
+LLM turns it into a complete persona: a name, a tagline, a full set of system
+instructions, and a matching voice. A dedicated Space generates a sticker
+avatar to go with it.
+
+Under the hood the conversation runs over the same WebRTC link: the robot's
+microphone streams up to a realtime speech model, the model's voice streams
+back to the speaker, and the model can call tools to move the head, play a
+recorded emotion, glance through the camera, or remember something about you.
+Composing a character becomes something anyone can do, no code required.
+
+### The common shape
+
+A hosted agent, your own coding agent, and a natural-language personality
+editor all reduce to the same operation: describe intent, get something that
+drives the robot over a uniform connection. The vibe-coding loop
+is not a feature bolted on top - it is the natural consequence of making
+the transport, the SDK and the embedding contract uniform all the way down.
+
+## Conclusion
+
+Reachy Mini is an open robot, but what turned it into a *platform* is a change
+in where code *can* run. Apps are no longer tied to the robot; to a client, the
+robot is an endpoint.
+
+The chain, in order:
+
+- **One WebRTC connection** carries audio, video and motor control - encrypted,
+  across NATs, local or remote. (BLE keeps the one job WebRTC cannot do:
+  setting up a robot that is not on any network yet.)
+- **The signaling central** introduces a client to a robot and steps aside;
+  **the SDK** reduces the whole bring-up to `autoConnect()`.
+- Because connecting is uniform and apps can run client-side, **clients are
+  interchangeable**: the browser, the mobile app and community Spaces are the
+  same kind of consumer.
+- Because an app is a static page and a session can be handed over, **official
+  clients can safely embed third-party apps**, curated by a catalogue and
+  screened by a content filter.
+- And because a working app is now three static files and one SDK call, **an
+  LLM can write one**: describe an app or a personality, watch it run on your
+  robot in seconds, publish it for everyone.
+
+<Note variant="info" emoji="🤖" title="The takeaway">
+Letting apps live off the robot did more than clean up the architecture. It
+made the unit of contribution small enough - a static Space, one call to
+connect - that both people and coding agents can produce one in minutes.
+</Note>
+
+The pieces are open. The SDK is plain JavaScript, the apps are ordinary Hugging
+Face Spaces, and the vibe coder will write the first one with you. If you have a
+Reachy Mini - or just an idea for what one should do - the shortest path from
+here is to describe it and watch it move.
+
+## Kudos
+
+Reachy Mini, its stack and the ideas explored in this article are the work of
+many people. Big thanks to the team behind the robot, the daemon, the SDK and
+the apps:
+
+<HfUserList>
+  <HfUser username="PierreRouanet" name="Pierre Rouanet" />
+  <HfUser username="RemiFabre" name="Rémi Fabre" />
+  <HfUser username="FabienDanieau" name="Fabien Danieau" />
+  <HfUser username="andito" name="Andres Marafioti" />
+  <HfUser username="alozowski" name="Alina Lozovskaya" />
+  <HfUser username="A-Mahla" name="Amir Mahla" />
+</HfUserList>

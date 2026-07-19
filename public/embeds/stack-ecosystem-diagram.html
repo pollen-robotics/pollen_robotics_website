@@ -1,0 +1,156 @@
+<div class="ecosystem-diagram">
+  <div class="ecosystem-diagram__canvas">
+    <img
+      src="/reachy-ecosystem.svg"
+      alt="The Reachy Mini ecosystem: hardware, daemon, signaling central, SDK and clients connected through a single WebRTC link."
+      loading="lazy"
+    />
+    <!-- Hotspots positioned as % of the SVG viewBox (3360 x 2467). -->
+    <!-- box: width 158 / 3360 = 4.702%, height 158 / 2467 = 6.405%, corners ~21%. -->
+    <a
+      class="ecosystem-hotspot"
+      href="https://github.com/pollen-robotics/reachy_mini"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Daemon - reachy_mini (GitHub)"
+      style="left:35.781%;top:36.694%;width:4.702%;height:6.405%;"
+    ><svg class="ecosystem-hotspot__ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="20" ry="20" pathLength="100" /></svg></a>
+    <a
+      class="ecosystem-hotspot"
+      href="https://huggingface.co/spaces/pollen-robotics/reachy_mini_central"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Signaling central - reachy_mini_central (HF Space)"
+      style="left:46.525%;top:36.694%;width:4.702%;height:6.405%;"
+    ><svg class="ecosystem-hotspot__ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="20" ry="20" pathLength="100" /></svg></a>
+    <a
+      class="ecosystem-hotspot"
+      href="https://github.com/pollen-robotics/reachy_mini/tree/main/ts"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="JS SDK - lives in reachy_mini/ts (GitHub)"
+      style="left:57.239%;top:36.694%;width:4.702%;height:6.405%;"
+    ><svg class="ecosystem-hotspot__ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="20" ry="20" pathLength="100" /></svg></a>
+    <a
+      class="ecosystem-hotspot"
+      href="https://github.com/pollen-robotics/reachy_mini_tray"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Tray - reachy_mini_tray (GitHub)"
+      style="left:25.752%;top:42.491%;width:4.702%;height:6.405%;"
+    ><svg class="ecosystem-hotspot__ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="20" ry="20" pathLength="100" /></svg></a>
+    <a
+      class="ecosystem-hotspot"
+      href="https://huggingface.co/spaces?search=reachy%20mini"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Apps - community Reachy Mini Spaces on Hugging Face"
+      style="left:68.222%;top:37.094%;width:4.702%;height:6.405%;"
+    ><svg class="ecosystem-hotspot__ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="20" ry="20" pathLength="100" /></svg></a>
+    <a
+      class="ecosystem-hotspot"
+      href="https://huggingface.co/spaces?search=reachy%20mini"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="User-created Spaces - browse Reachy Mini apps on Hugging Face"
+      style="left:79.025%;top:84.763%;width:4.702%;height:6.405%;"
+    ><svg class="ecosystem-hotspot__ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="20" ry="20" pathLength="100" /></svg></a>
+    <a
+      class="ecosystem-hotspot"
+      href="https://huggingface.co/datasets/pollen-robotics/reachy_mini_store_data"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Constants - reachy_mini_store_data (HF Dataset)"
+      style="left:68.192%;top:61.380%;width:4.702%;height:6.405%;"
+    ><svg class="ecosystem-hotspot__ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="20" ry="20" pathLength="100" /></svg></a>
+    <a
+      class="ecosystem-hotspot"
+      href="https://github.com/pollen-robotics/reachy_mini_website"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Official website - reachy_mini_website (GitHub)"
+      style="left:89.859%;top:61.380%;width:4.702%;height:6.405%;"
+    ><svg class="ecosystem-hotspot__ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="20" ry="20" pathLength="100" /></svg></a>
+  </div>
+</div>
+<style>
+  .ecosystem-diagram {
+    width: 100%;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: clamp(12px, 2vw, 28px);
+    box-sizing: border-box;
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+    overflow: hidden;
+  }
+  /* Dark mode: the SVG is black line-art, so invert it onto a dark surface
+     instead of trapping a glaring white box inside the dark page. */
+  [data-theme="dark"] .ecosystem-diagram {
+    background: var(--surface-bg, #07080a);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  [data-theme="dark"] .ecosystem-diagram img {
+    filter: invert(1) hue-rotate(180deg);
+  }
+  .ecosystem-diagram__canvas {
+    position: relative;
+    width: 100%;
+    line-height: 0;
+  }
+  .ecosystem-diagram img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  /* Higher specificity than the template's ".content-grid main a" rule, which
+     would otherwise paint a solid --surface-bg fill over every linked node. */
+  .ecosystem-diagram a.ecosystem-hotspot {
+    position: absolute;
+    z-index: 11; /* sit above the diagram image (which has z-index: 10) */
+    cursor: pointer;
+    background: transparent; /* never paint over the node behind it */
+    padding: 0;
+    border: 0;
+    margin: 0;
+    box-sizing: border-box;
+    outline: none;
+  }
+  /* Clickable affordance = a dashed "marching-ants" outline drawn as an SVG
+     stroke. Because it is a stroke (fill: none), the inside of every box stays
+     fully transparent and the diagram shows through untouched. */
+  .ecosystem-hotspot__ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .ecosystem-hotspot__ring rect {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 1.5px;
+    vector-effect: non-scaling-stroke; /* constant thickness whatever the box size */
+    stroke-linecap: round;
+    stroke-dasharray: 1 1.5; /* perimeter normalised to 100 via pathLength */
+    opacity: 0.7;
+    animation: ecosystem-march 2.4s linear infinite;
+    transition: opacity 0.18s ease, stroke-width 0.18s ease;
+  }
+  .ecosystem-hotspot:hover .ecosystem-hotspot__ring rect,
+  .ecosystem-hotspot:focus-visible .ecosystem-hotspot__ring rect {
+    opacity: 1;
+    stroke-width: 2px;
+  }
+  @keyframes ecosystem-march {
+    to {
+      stroke-dashoffset: -11; /* 2 × (2 + 3.5) → seamless loop */
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ecosystem-hotspot__ring rect {
+      animation: none;
+    }
+  }
+</style>

@@ -161,7 +161,7 @@ function HeroSection() {
       sx={{
         background: "linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%)",
         color: "white",
-        pt: { xs: 14, md: 18 },
+        pt: { xs: 22, md: 24 },
         pb: { xs: 10, md: 14 },
         position: "relative",
         overflow: "hidden",

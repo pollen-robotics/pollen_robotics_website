@@ -1,0 +1,279 @@
+<div class="rmb" data-mounted="false">
+  <div class="rmb-grid">
+    <svg class="rmb-wires" aria-hidden="true" preserveAspectRatio="none"></svg>
+    <!-- LEFT: 2 ways to consume apps -->
+    <section class="rmb-zone rmb-left">
+      <p class="rmb-kicker"><b>2</b> ways to consume apps</p>
+      <div class="rmb-chip" style="--c: var(--rmb-c0)">
+        <span class="rmb-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>
+        </span>
+        <span class="rmb-lab">Mobile app</span>
+      </div>
+      <div class="rmb-chip" style="--c: var(--rmb-c1)">
+        <span class="rmb-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="2.4"/><line x1="2.5" y1="9" x2="21.5" y2="9"/><circle cx="5.6" cy="6.5" r=".5" fill="currentColor"/><circle cx="7.8" cy="6.5" r=".5" fill="currentColor"/></svg>
+        </span>
+        <span class="rmb-lab">Browser</span>
+      </div>
+    </section>
+
+    <!-- CENTER: the one SDK + 2 connection modes -->
+    <section class="rmb-hero">
+      <p class="rmb-kicker rmb-kicker-accent"><b>1</b> SDK</p>
+      <div class="rmb-title">WebRTC</div>
+      <code class="rmb-mono">reachy-mini-sdk</code>
+      <div class="rmb-modes" role="group" aria-label="2 connection modes">
+        <span class="rmb-mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><rect x="6.5" y="11" width="11" height="8" rx="1.4"/></svg>
+          local
+        </span>
+        <span class="rmb-mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12 H20.5"/><path d="M12 3.5 C8 7 8 17 12 20.5 C16 17 16 7 12 3.5Z"/></svg>
+          internet
+        </span>
+      </div>
+    </section>
+
+    <!-- RIGHT: 2 hardwares -->
+    <section class="rmb-zone rmb-right">
+      <p class="rmb-kicker"><b>2</b> hardwares</p>
+      <div class="rmb-chip rmb-chip-hw">
+        <img class="rmb-bot" src="/reachy-buste.svg" alt="Reachy Mini" />
+        <span class="rmb-hwtext">
+          <span class="rmb-lab">Reachy Mini</span>
+        </span>
+      </div>
+      <div class="rmb-chip rmb-chip-hw">
+        <img class="rmb-bot" src="/reachy-buste.svg" alt="Reachy Mini Lite" />
+        <span class="rmb-hwtext">
+          <span class="rmb-lab">Reachy Mini Lite</span>
+        </span>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .rmb {
+      --rmb-c0: var(--primary-color, #4EA5B7); --rmb-c1: var(--primary-color, #9B8CFA); --rmb-c2: var(--primary-color, #E889AB);
+      --rmb-text: var(--text-color, #1a1a1a);
+      --rmb-muted: var(--muted-color, #6b7280);
+      --rmb-border: var(--border-color, rgba(0,0,0,0.10));
+      --rmb-surface: var(--surface-bg, #ffffff);
+      position: relative;
+      width: 100%;
+      margin: 10px 0;
+      box-sizing: border-box;
+      padding: clamp(14px, 3vw, 30px);
+      border-radius: 18px;
+      overflow: hidden;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+    }
+    .rmb::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(color-mix(in srgb, var(--rmb-text) 9%, transparent) 1px, transparent 1.4px);
+      background-size: 22px 22px;
+      -webkit-mask-image: radial-gradient(120% 100% at 50% 50%, #000 35%, transparent 80%);
+              mask-image: radial-gradient(120% 100% at 50% 50%, #000 35%, transparent 80%);
+      opacity: .5;
+    }
+
+    .rmb-grid {
+      position: relative; z-index: 1; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      gap: clamp(34px, 7vw, 104px);
+    }
+
+    .rmb-kicker {
+      margin: 0 0 10px; font-size: clamp(9px, 1.05vw, 11px);
+      letter-spacing: .14em; text-transform: uppercase; font-weight: 700;
+      color: var(--rmb-muted); white-space: nowrap;
+    }
+    .rmb-kicker b { color: var(--rmb-text); font-weight: 800; }
+    .rmb-kicker-accent { color: color-mix(in srgb, var(--rmb-c1) 80%, var(--rmb-muted)); }
+    .rmb-kicker-accent b { color: color-mix(in srgb, var(--rmb-c1) 70%, var(--rmb-text)); }
+
+    .rmb-zone { display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 12px); }
+    .rmb-right { align-items: stretch; }
+    /* keep the side captions out of the flow so the CARDS (not cards+label) are
+       what gets vertically centered on the hub axis */
+    .rmb-zone .rmb-kicker {
+      position: absolute; bottom: calc(100% + 8px); left: 0; right: 0;
+      margin: 0; text-align: center;
+    }
+
+    .rmb-chip {
+      display: flex; align-items: center; gap: clamp(8px, 1vw, 12px);
+      padding: clamp(7px, 1vw, 11px) clamp(11px, 1.3vw, 16px);
+      background: var(--rmb-surface);
+      border: 1px solid var(--rmb-border);
+      border-radius: 14px;
+      white-space: nowrap;
+    }
+    .rmb-ic {
+      flex: none; display: grid; place-items: center;
+      width: clamp(26px, 3vw, 34px); height: clamp(26px, 3vw, 34px);
+      border-radius: 9px;
+      color: var(--c, var(--rmb-c1));
+      background: color-mix(in srgb, var(--c, var(--rmb-c1)) 14%, transparent);
+    }
+    .rmb-ic svg { width: 60%; height: 60%; }
+    .rmb-lab { font-weight: 650; font-size: clamp(12px, 1.35vw, 15px); color: var(--rmb-text); }
+
+    .rmb-chip-hw {
+      gap: clamp(6px, .8vw, 10px); padding-block: clamp(5px, .7vw, 8px);
+      background: none; border: none; box-shadow: none;
+    }
+    .rmb-bot {
+      flex: none; height: clamp(38px, 5vw, 56px); width: auto;
+    }
+    .rmb-hwtext { display: flex; flex-direction: column; gap: 2px; }
+    .rmb-sub {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: clamp(9px, 1vw, 11px); font-weight: 600; color: var(--rmb-muted);
+    }
+    .rmb-sub svg { width: 13px; height: 13px; opacity: .9; }
+
+    /* hero */
+    .rmb-hero {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      padding: clamp(12px, 1.8vw, 20px) clamp(16px, 2.4vw, 30px);
+      border-radius: 20px;
+      background: var(--rmb-surface);
+      border: 1.5px solid color-mix(in srgb, var(--rmb-c1) 45%, var(--rmb-border));
+    }
+    .rmb-title {
+      font-weight: 850; line-height: 1;
+      font-size: clamp(24px, 4.2vw, 46px);
+      letter-spacing: -.02em; color: var(--rmb-text);
+    }
+    .rmb-mono {
+      margin-top: 5px; font-size: clamp(9.5px, 1.15vw, 12px);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--rmb-muted); letter-spacing: .02em;
+    }
+    .rmb-modes {
+      display: inline-flex; align-items: stretch; margin-top: clamp(9px, 1.4vw, 14px);
+      border: 1px solid color-mix(in srgb, var(--rmb-c1) 35%, var(--rmb-border));
+      border-radius: 999px; overflow: hidden;
+      background: color-mix(in srgb, var(--rmb-surface) 70%, transparent);
+      backdrop-filter: blur(2px);
+    }
+    .rmb-mode {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: clamp(4px, .7vw, 7px) clamp(9px, 1.3vw, 14px);
+      font-size: clamp(10px, 1.15vw, 13px); font-weight: 650; color: var(--rmb-text);
+    }
+    .rmb-mode:first-child { border-right: 1px solid color-mix(in srgb, var(--rmb-c1) 30%, var(--rmb-border)); }
+    .rmb-mode svg { width: clamp(12px, 1.4vw, 15px); height: clamp(12px, 1.4vw, 15px); color: color-mix(in srgb, var(--rmb-c1) 70%, var(--rmb-text)); }
+
+    /* SVG connector layer: one bidirectional arrow per block, converging on the hub */
+    .rmb-zone, .rmb-hero { position: relative; z-index: 1; }
+    .rmb-wires {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; overflow: visible;
+    }
+    .rmb-wires .rmb-wire {
+      fill: none;
+      stroke: color-mix(in srgb, var(--rmb-c1) 50%, transparent);
+      stroke-width: 1.8;
+    }
+    .rmb-wires marker path { fill: color-mix(in srgb, var(--rmb-c1) 75%, transparent); }
+    .rmb-wires .rmb-flow { fill: var(--rmb-c1); }
+    .rmb-wires .rmb-flow.rmb-flow-b { fill: color-mix(in srgb, var(--rmb-c1) 55%, var(--rmb-c2)); opacity: .7; }
+
+    @keyframes rmb-float { 0%, 100% { transform: translateY(0) rotate(-1.2deg); } 50% { transform: translateY(-5px) rotate(1.2deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .rmb-flow { display: none; }
+    }
+
+    /* stack on narrow widths */
+    @media (max-width: 560px) {
+      .rmb-grid { flex-wrap: wrap; gap: 14px; }
+      .rmb-zone, .rmb-hero { flex: 1 1 100%; }
+      .rmb-zone { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+      .rmb-zone .rmb-kicker { position: static; }
+      .rmb-kicker { flex: 1 1 100%; text-align: center; margin-bottom: 2px; }
+    }
+  </style>
+
+  <script>
+    (() => {
+      const root = document.currentScript.closest('.rmb');
+      if (!root || root.dataset.mounted === 'true') return;
+      root.dataset.mounted = 'true';
+      const apply = () => {
+        try {
+          const primary = getComputedStyle(document.documentElement)
+            .getPropertyValue('--primary-color').trim();
+          if (primary) {
+            root.style.setProperty('--rmb-c0', primary);
+            root.style.setProperty('--rmb-c1', primary);
+            root.style.setProperty('--rmb-c2', primary);
+          }
+        } catch (e) {}
+      };
+      apply();
+      window.addEventListener('palettes:updated', apply);
+      new MutationObserver(apply).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+      // ---- SVG connectors: one bidirectional arrow per block, converging on the hub
+      const grid = root.querySelector('.rmb-grid');
+      const svg = root.querySelector('.rmb-wires');
+      const hero = root.querySelector('.rmb-hero');
+      const left = root.querySelector('.rmb-left');
+      let wid = 0;
+      const center = (el, side) => {
+        const r = el.getBoundingClientRect();
+        const g = grid.getBoundingClientRect();
+        const x = side === 'l' ? r.left : side === 'r' ? r.right : (r.left + r.right) / 2;
+        return { x: x - g.left, y: (r.top + r.bottom) / 2 - g.top };
+      };
+      const seg = (a, b) => {
+        const mx = (a.x + b.x) / 2;
+        return `M${a.x.toFixed(1)},${a.y.toFixed(1)} C${mx.toFixed(1)},${a.y.toFixed(1)} ${mx.toFixed(1)},${b.y.toFixed(1)} ${b.x.toFixed(1)},${b.y.toFixed(1)}`;
+      };
+      const wire = (a, b) => {
+        const id = 'rmw' + (wid++);
+        return `<path class="rmb-wire" id="${id}" d="${seg(a, b)}" marker-start="url(#rmb-ah)" marker-end="url(#rmb-ah)"/>`
+          + `<circle class="rmb-flow" r="2.8"><animateMotion dur="2.6s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1"><mpath href="#${id}"/></animateMotion></circle>`
+          + `<circle class="rmb-flow rmb-flow-b" r="2.2"><animateMotion dur="3.1s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="1;0"><mpath href="#${id}"/></animateMotion></circle>`;
+      };
+      const setSvg = (markup) => {
+        svg.replaceChildren();
+        if (!markup) return;
+        const doc = new DOMParser().parseFromString(
+          `<svg xmlns="http://www.w3.org/2000/svg">${markup}</svg>`, 'image/svg+xml');
+        const wrap = doc.documentElement;
+        if (wrap && wrap.nodeName !== 'parsererror') {
+          [...wrap.childNodes].forEach((n) => svg.appendChild(document.importNode(n, true)));
+        }
+      };
+      const drawWires = () => {
+        const g = grid.getBoundingClientRect();
+        if (g.width < 2) return;
+        svg.setAttribute('viewBox', `0 0 ${g.width.toFixed(1)} ${g.height.toFixed(1)}`);
+        const stacked = left.getBoundingClientRect().bottom <= hero.getBoundingClientRect().top + 1;
+        if (stacked) { setSvg(''); return; }
+        wid = 0;
+        const heroL = center(hero, 'l'), heroR = center(hero, 'r');
+        const apps = [...root.querySelectorAll('.rmb-left .rmb-chip')];
+        const bots = [...root.querySelectorAll('.rmb-right .rmb-chip')];
+        let m = '<defs><marker id="rmb-ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto-start-reverse"><path d="M0.5,0.5 L6.5,3 L0.5,5.5 Z"/></marker></defs>';
+        apps.forEach((el) => { m += wire(center(el, 'r'), heroL); });
+        bots.forEach((el) => { m += wire(heroR, center(el, 'l')); });
+        setSvg(m);
+      };
+      const schedule = () => requestAnimationFrame(() => requestAnimationFrame(drawWires));
+      schedule();
+      if ('ResizeObserver' in window) new ResizeObserver(schedule).observe(grid);
+      window.addEventListener('load', schedule);
+      root.querySelectorAll('.rmb-bot').forEach((img) => { if (!img.complete) img.addEventListener('load', schedule, { once: true }); });
+    })();
+  </script>
+</div>

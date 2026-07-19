@@ -613,7 +613,7 @@ export default function AppsPage() {
       <Box
         sx={{
           background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
-          pt: { xs: 16, md: 18 },
+          pt: { xs: 22, md: 24 },
           pb: { xs: 10, md: 12 },
           position: "relative",
           overflow: "visible",

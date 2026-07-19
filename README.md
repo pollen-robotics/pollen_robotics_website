@@ -21,7 +21,7 @@ its own MUI theme and a shared header:
 | `/reachy-2`       | Reachy 2    | Full-size humanoid product page                   |
 | `/reachy-mini`    | Reachy Mini | App store: the JS apps list (SSR, SEO-friendly)   |
 | `/blog`           | Pollen      | MDX blog                                          |
-| `/reachy-mini/blog` | Reachy Mini | MDX blog (currently disabled / 404)             |
+| `/reachy-mini/blog` | Reachy Mini | MDX blog                                         |
 
 ## Architecture
 
@@ -78,18 +78,25 @@ npm run build && npm run start   # production build + server
 
 ## Deploy
 
-Two targets share one codebase:
+Two targets share one codebase, with different triggers:
 
-- **GitHub Pages (production, `pollen-robotics.com`)** - primary. A static
-  export (`STATIC_EXPORT=1 npm run build` -> `out/`) is published by the
-  `.github/workflows/deploy.yml` workflow on every push to `main`, on manual
-  dispatch, and daily (cron) to refresh the baked-in apps catalog. The custom
-  domain is set via `public/CNAME`; `public/.nojekyll` preserves the `_next`
-  directory.
-- **Hugging Face Space (preview)** - the included `Dockerfile` builds the
-  standalone output and runs `next start` on port 7860.
+- **Hugging Face Space (staging, private)** - published on **every push to
+  `main`** by `.github/workflows/deploy-hf-space.yml`. It builds the static
+  export and uploads `out/` to the private static Space
+  `pollen-robotics/pollen-robotics-staging` (created automatically on first
+  run). A daily cron refreshes the baked-in apps catalog here. Requires an
+  `HF_TOKEN` repo secret with write access to the `pollen-robotics` org.
+- **GitHub Pages (production, `pollen-robotics.com`)** - **not** deployed on
+  `main`. It ships only when the dedicated **`production` branch** is updated,
+  via `.github/workflows/deploy.yml`: `git push origin main:production`.
+  `workflow_dispatch` (Actions > Run workflow) is kept as a manual escape hatch.
+  The custom domain is set via `public/CNAME`; `public/.nojekyll` preserves the
+  `_next` directory.
+
+Required GitHub repo secret: `HF_TOKEN` (write token for the `pollen-robotics`
+HF org, used by the preview Space deploy).
 
 ```bash
-# Reproduce the GitHub Pages build locally
+# Reproduce either build locally
 STATIC_EXPORT=1 npm run build && npx serve out
 ```

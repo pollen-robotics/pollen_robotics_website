@@ -1,0 +1,100 @@
+name: Deploy preview to Hugging Face Space
+
+# Every push to main publishes a preview to the private Pollen Robotics staging
+# HF Space (static SDK). Production (pollen-robotics.com) is gated behind the
+# `production` branch, see deploy.yml. A daily cron keeps the statically-baked
+# Reachy Mini app catalog fresh on the preview.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+
+concurrency:
+  group: hf-space
+  cancel-in-progress: true
+
+env:
+  HF_SPACE_ID: pollen-robotics/pollen-robotics-staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        env:
+          STATIC_EXPORT: "1"
+          # Keep canonical/OG URLs pointing at production so the preview does
+          # not compete with pollen-robotics.com in search results.
+          NEXT_PUBLIC_SITE_URL: https://pollen-robotics.com
+        run: npm run build
+
+      - name: Add Space config (static SDK)
+        run: |
+          cat > out/README.md <<'EOF'
+          ---
+          title: Pollen Robotics (staging)
+          emoji: 🌻
+          colorFrom: yellow
+          colorTo: gray
+          sdk: static
+          pinned: false
+          ---
+
+          Private staging preview of pollen-robotics.com, built from the
+          `pollen_robotics_website` repository on every push to `main`.
+          Production lives at https://pollen-robotics.com.
+          EOF
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install huggingface_hub
+        run: pip install "huggingface_hub>=0.24"
+
+      - name: Publish to HF Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          space_id = os.environ["HF_SPACE_ID"]
+
+          # Create the private static Space on first run; no-op if it exists.
+          api.create_repo(
+              repo_id=space_id,
+              repo_type="space",
+              space_sdk="static",
+              private=True,
+              exist_ok=True,
+          )
+
+          api.upload_folder(
+              folder_path="out",
+              repo_id=space_id,
+              repo_type="space",
+              commit_message=f"Deploy {os.environ.get('GITHUB_SHA', 'local')[:7]}",
+              # Mirror the build exactly: drop anything no longer produced,
+              # but never touch the Space's own git metadata.
+              delete_patterns=["*", "**/*"],
+              ignore_patterns=[".git*", ".git/**"],
+          )
+          PY
