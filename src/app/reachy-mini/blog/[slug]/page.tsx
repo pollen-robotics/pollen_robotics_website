@@ -4,12 +4,16 @@ import BlogPost from "@/components/BlogPost";
 import PageHero from "@/components/reachy/PageHero";
 import ArticleHeroMeta from "@/components/reachy/ArticleHeroMeta";
 import { getPost, getPostSlugs } from "@/lib/blog";
+import { REACHY_BLOG_ENABLED } from "@/lib/flags";
 
 export const dynamicParams = false;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pollen-robotics.com";
 
 export function generateStaticParams() {
+  // `output: export` requires a non-empty result. When the blog is disabled we
+  // emit a single placeholder slug that always 404s (see notFound() below).
+  if (!REACHY_BLOG_ENABLED) return [{ slug: "__disabled__" }];
   return getPostSlugs("reachy-mini").map((slug) => ({ slug }));
 }
 
@@ -51,6 +55,7 @@ export default async function ReachyBlogPostPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  if (!REACHY_BLOG_ENABLED) notFound();
   const { slug } = await params;
   const post = getPost("reachy-mini", slug);
   if (!post) notFound();

@@ -22,6 +22,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { REACHY_BLOG_ENABLED } from "@/lib/flags";
 
 const BASE = "/reachy-mini";
 
@@ -35,7 +36,7 @@ const navItems: NavItem[] = [
   { label: "Get Started", href: `${BASE}/getting-started` },
   { label: "Download", href: `${BASE}/download` },
   { label: "Apps", href: `${BASE}/apps` },
-  { label: "Blog", href: `${BASE}/blog` },
+  ...(REACHY_BLOG_ENABLED ? [{ label: "Blog", href: `${BASE}/blog` }] : []),
   { label: "Create", href: "https://huggingface.co/docs/reachy_mini/index", external: true },
   {
     label: "FAQ",

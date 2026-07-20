@@ -40,6 +40,8 @@ jobs:
         env:
           STATIC_EXPORT: "1"
           NEXT_PUBLIC_SITE_URL: https://pollen-robotics.com
+          # Reachy Mini blog is staging-only for now; hide it in production.
+          NEXT_PUBLIC_DISABLE_REACHY_BLOG: "1"
         run: npm run build
 
       - name: Upload Pages artifact
