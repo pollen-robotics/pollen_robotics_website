@@ -40,6 +40,7 @@ export default function Quote({
       }}
     >
       <Typography
+        component="div"
         sx={{
           fontSize: "1.5rem",
           lineHeight: 1.4,

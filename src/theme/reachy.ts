@@ -106,8 +106,11 @@ const reachyTheme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        html: { overflowX: "hidden" },
-        body: { overflowX: "hidden" },
+        // `clip` prevents horizontal scroll WITHOUT turning html/body into a
+        // scroll container - `overflow-x: hidden` would (it forces overflow-y
+        // to `auto`), which breaks `position: sticky` for the article TOC.
+        html: { overflowX: "clip" },
+        body: { overflowX: "clip" },
       },
     },
     MuiButton: {

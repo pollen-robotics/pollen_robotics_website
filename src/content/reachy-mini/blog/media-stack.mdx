@@ -1,0 +1,473 @@
+---
+title: "Eyes, ears, and a voice: building Reachy Mini's media stack"
+description: "How Reachy Mini streams audio and video. The camera, the microphone array, and GStreamer + WebRTC that let the same code work whether an app runs on the robot, your laptop, or a GPU-backed Hugging Face Space."
+cover: "/assets/blog/cover-media-stack-v2.webp"
+date: "2026-06-10"
+authors:
+  - name: "Fabien Danieau"
+    url: "https://huggingface.co/FabienDanieau"
+  - name: "Alina Lozovskaya"
+    url: "https://huggingface.co/alozowski"
+  - name: "Caroline Pascal"
+    url: "https://huggingface.co/CarolinePascal"
+  - name: "Antoine Pirrone"
+    url: "https://huggingface.co/apirrone"
+tags:
+  - "Engineering"
+  - "Audio & Video"
+  - "WebRTC"
+---
+
+Reachy Mini interacts with its environment based on what it perceives through
+its camera and microphone. Audio and video handling is therefore a key part of
+this little robot. Both versions, Lite and Wireless, can be used locally or
+remotely, and we wanted that to feel seamless to the user: the same code works
+in every case.
+
+The payoff is that you can build AI apps directly on top of Reachy Mini's audio
+and video streams, and run them wherever it makes sense: on the robot, on your
+laptop, or on a GPU-backed [Hugging Face Space](https://huggingface.co/spaces).
+This post walks through the technical choices and the design we landed on to
+make that possible.
+
+<Video src="/assets/blog/media-stack/object-tracking-intro.mp4" aspect="16 / 9" loop>
+Object tracking running on a ZeroGPU Hugging Face Space, receiving a direct
+WebRTC camera stream from the robot.
+</Video>
+
+## Hardware
+
+Before getting into the software, let's look at the hardware these robots carry
+to sense the world.
+
+The Lite and Wireless components are listed on their respective documentation
+pages ([Lite](https://huggingface.co/docs/reachy_mini/platforms/reachy_mini_lite/hardware),
+[Wireless](https://huggingface.co/docs/reachy_mini/platforms/reachy_mini/hardware)).
+They are mostly the same, with a few differences worth noting.
+
+### Camera
+
+On both units, the camera is a
+[Raspberry Pi Camera 3 Wide](https://www.raspberrypi.com/products/camera-module-3/),
+with the following characteristics:
+
+- Sony IMX708 image sensor
+- 12 MP
+- Auto focus
+- MIPI DSI connection
+
+<Image
+  src="/assets/blog/media-stack/camera.webp"
+  alt="The Raspberry Pi Camera 3 Wide used by Reachy Mini"
+  caption="The Raspberry Pi Camera 3 Wide, shared by both the Lite and Wireless versions."
+  width={1600}
+  height={1200}
+/>
+
+Both cameras can stream 1920×1080 at 60 fps, which is useful for tracking
+applications. Here are the characteristics of the rpi cam:
+
+```text
+$ rpicam-vid --list-cameras
+Available cameras
+0 : imx708_wide [4608x2592 10-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx708@1a)
+Modes: 'SRGGB10_CSI2P' : 1536x864 [120.13 fps - (768, 432)/3072x1728 crop]
+2304x1296 [56.03 fps - (0, 0)/4608x2592 crop]
+4608x2592 [14.35 fps - (0, 0)/4608x2592 crop]
+```
+
+To make it USB plug-and-play, the Lite's camera sits on a custom board that
+makes it UVC-compliant. The resolutions are roughly similar, but note that the
+Lite's camera outputs compressed JPEG images, which are decompressed for you.
+Depending on your application, though, you may prefer to access the JPEG frames
+directly.
+
+```text
+v4l2-ctl --device=/dev/video4 --list-formats-ext
+ioctl: VIDIOC_ENUM_FMT
+    Type: Video Capture
+
+    [0]: 'MJPG' (Motion-JPEG, compressed)
+        Size: Discrete 3840x2592
+            Interval: Discrete 0.033s (30.000 fps)
+        Size: Discrete 1920x1080
+            Interval: Discrete 0.017s (60.000 fps)
+        Size: Discrete 3840x2160
+            Interval: Discrete 0.033s (30.000 fps)
+        Size: Discrete 3264x2448
+            Interval: Discrete 0.033s (30.000 fps)
+```
+
+<Note variant="neutral" emoji="🍎" title="macOS note">
+On macOS, the GStreamer <code>avfvideosrc</code> (AVFoundation) source caps the
+fps to 30.
+</Note>
+
+The camera is calibrated with
+[multical](https://github.com/pollen-robotics/multical), so its parameters are
+available for any computer vision task (see the
+[`look_at` example](https://huggingface.co/docs/reachy_mini/examples/look_at)).
+
+### Audio
+
+The microphone is a custom version of
+[Seeed's reSpeaker XVF3800](https://wiki.seeedstudio.com/respeaker_xvf3800_introduction/),
+a microphone array built around the XMOS XVF3800 voice-processor chip:
+
+- 4 PDM MEMS digital mics, isolated with silicone gaskets
+- 16 kHz max sample rate / −26 dBFS sensitivity / 64 dBA SNR
+
+We paired it with a 5 W / 4 Ω speaker. Although there are four microphones, the
+firmware mixes and cleans the captured audio into a stereo signal.
+
+Two features of this audio system stand out:
+
+- **Acoustic Echo Cancellation (AEC)** filters out the sound coming from the
+  robot's own speaker, so Reachy Mini doesn't end up talking to itself. AEC is
+  built into the microphone and is always on.
+- **Direction of Arrival (DoA)** locates the sound source over a 180° range.
+  (The microphone array is linear; a circular layout would be needed for full
+  360° coverage.) DoA is exposed through the SDK and is read on demand when your
+  app asks for it.
+
+<Video src="/assets/blog/media-stack/doa.mp4" aspect="640 / 500" maxWidth={520} loop>
+Direction of Arrival in action: Reachy Mini estimates where a sound comes from
+over a 180° range.
+</Video>
+
+The microphones were calibrated in collaboration with Seeed during the design
+process. The ideal setup is an audio source facing the robot from about 1 m
+away. Beyond that, the
+[XMOS XVF3800 chip](https://www.xmos.com/documentation/XM-014888-PC/html/modules/fwk_xvf/doc/user_guide/AA_control_command_appendix.html)
+exposes many parameters you can still tune if the default configuration doesn't
+meet your needs.
+
+With the hardware in hand, the real work is software: getting these streams to
+your application, wherever it runs.
+
+## Technical challenges
+
+Accessing a camera stream should be trivial nowadays. Reachy Mini Lite has a USB
+camera (a Raspberry Pi Camera 3 Wide on a custom module) that can be read
+directly from the host computer. Reachy Mini Wireless uses the same Raspberry Pi
+Camera 3 Wide, but it lives on the robot's embedded compute module, so it has to
+be reached remotely. Our SDK hides this difference: the same API returns a frame
+on both robots.
+
+But why stop there? If we can stream the Wireless camera remotely, we can do the
+same for the Lite, and from any platform.
+
+Audio has the same requirements, with an extra twist: it is bidirectional.
+Reachy Mini both listens and speaks.
+
+To handle all of these configurations with a single, consistent design, we chose
+GStreamer.
+
+## GStreamer
+
+[GStreamer](https://gstreamer.freedesktop.org/) is an open-source,
+well-documented, well-maintained, and cross-platform multimedia library. Among
+many other things, it can access the camera and microphone and then convert the
+data into whatever format is needed for display or processing. GStreamer also
+ships its own implementation of WebRTC, the current standard for low-latency
+media streaming over the network (the curious reader will find a
+[great introduction here](https://webrtcforthecurious.com/)).
+
+<Note variant="info" emoji="📡" title="WebRTC">
+WebRTC is the technology browsers use for real-time video calls. It sets up a
+direct, low-latency connection between two peers and carries audio, video, and
+arbitrary data over it. We use it to stream the robot's camera and microphone,
+and to send control commands back.
+</Note>
+
+GStreamer's large plugin ecosystem also makes it easy to extend what Reachy Mini
+can do. For example,
+[speech-to-text](https://centricular.com/devlog/2026-02/whisper/) and
+[text-to-speech](https://centricular.com/devlog/2025-11/elevenlabs-speech-synthesis/)
+plugins are readily available.
+
+The only thing missing was easy installation through pip. The Reachy Mini SDK
+has to be simple to install: nothing more than `pip install reachy-mini`. So we
+[teamed up with Centricular](https://centricular.com/devlog/2026-02/Python-Wheels/)
+to make GStreamer available as Python wheels, for everyone.
+
+With GStreamer chosen, let's see how we assembled the pieces into Reachy Mini's
+media architecture.
+
+## Architecture
+
+The architecture is detailed in the
+[official documentation](https://huggingface.co/docs/reachy_mini/SDK/media-architecture).
+The following sections break down the server (the robot) and the client (your
+computer) sides.
+
+### Server side (Reachy Mini)
+
+The goal on the server side is to make the camera and microphone reachable from
+both local and remote clients.
+
+"Local" covers two cases. On the Lite, the SDK reads frames from the
+USB-connected camera on the host computer. On the Wireless, an app can run
+directly on the embedded Raspberry Pi compute module. The Wireless is also meant
+to be used remotely (a user might want to grab frames with the SDK and process
+them on a separate computer), and remote access is required for web apps (see
+Remote apps below). So the Lite needs to expose its audio/video stream too.
+
+To cover all of this, we built a single GStreamer pipeline around two outputs.
+The camera stream is forwarded both to a `webrtcsink` element (for remote
+clients) and to a local IPC endpoint: `unixfdsink` on Linux and macOS,
+`win32ipcvideosink` on Windows. The point of splitting the stream this way is to
+avoid locking the camera to a single consumer: a remote viewer and a local app
+can read it at the same time.
+
+<Note variant="info" emoji="🔌" title="IPC">
+IPC (inter-process communication) is just a fast, local channel between two
+processes on the same machine. Here it lets an on-device app receive raw camera
+frames straight from the daemon, with no encoding or decoding in between.
+</Note>
+
+Audio is simpler, because the sound card can be opened by several clients at
+once. On the server side, we only need to route the audio to the WebRTC element.
+If a local client wants to open the audio device, it can do so directly through
+GStreamer, with no need for IPC.
+
+<Image
+  src="/assets/blog/media-stack/arch-daemon.webp"
+  alt="Server-side media pipeline on Reachy Mini"
+  caption="Server side: a single GStreamer pipeline feeds both a local IPC endpoint and a WebRTC sink, so a local app and a remote viewer can read the camera at the same time."
+  width={941}
+  height={546}
+/>
+
+For those familiar with GStreamer pipelines, this translates into:
+
+```bash
+gst-launch-1.0 webrtcsink run-signalling-server=true meta="meta,name=reachymini" name=ws libcamerasrc ! capsfilter caps=video/x-raw,width=1280,height=720,framerate=60/1,format=YUY2,colorimetry=bt709,interlace-mode=progressive ! tee name=t t. ! queue !  v4l2h264enc extra-controls="controls,repeat_sequence_header=1" ! 'video/x-h264,level=(string)4' ! ws. t. ! queue ! videoconvert ! video/x-raw,format=BGR !  unixfdsink socket-path=/tmp/reachymini_camera_socket alsasrc device=reachymini_audio_src provide-clock=false ! ws.
+```
+
+This is for the Reachy Mini Wireless (Raspberry Pi). The pipeline is slightly
+adapted for other platforms.
+
+### Client side (your computer)
+
+The client side mirrors the server. There are two cases: a local client, which
+reads frames from the local IPC endpoint, and a remote client, which receives
+them over WebRTC. The SDK auto-detects which one applies: if the daemon's local
+endpoint is reachable, it uses IPC; otherwise it falls back to WebRTC. Either
+way, your code calls the same API. Many examples can be found in the
+documentation such as the
+[look at](https://huggingface.co/docs/reachy_mini/examples/look_at) or
+[sound playback](https://huggingface.co/docs/reachy_mini/examples/sound_play).
+
+<Image
+  src="/assets/blog/media-stack/arch-client.webp"
+  alt="Client-side media consumption on your computer"
+  caption="Client side: the SDK reads frames from the local IPC endpoint when the robot is reachable locally, and falls back to WebRTC otherwise. Your code calls the same API in both cases."
+  width={770}
+  height={744}
+/>
+
+So far we've covered how the SDK reads the streams. But the WebRTC path opens up
+more than that: it lets apps run far from the robot, in a browser or on a remote
+server. Let's see what that enables.
+
+The GStreamer pipeline to consume the streams locally is:
+
+```bash
+gst-launch-1.0 unixfdsrc socket-path=/tmp/reachymini_camera_socket ! videoconvert ! fakesink alsasrc device=reachymini_audio_src ! queue ! audioconvert ! audioresample ! fakesink
+```
+
+And for a remote client:
+
+```bash
+gst-launch-1.0 webrtcsrc signaller::uri="ws://<ip_robot>:8443" connect-to-first-producer=true name=src src. ! videoconvert ! autovideosink src. ! autoaudiosink
+```
+
+In our SDK, the sinks are `appsink` elements that expose the frames and audio
+samples to your code, but these pipelines are still handy for debugging!
+
+## Remote apps
+
+One big advantage of WebRTC is that an app can consume the audio/video stream
+from anywhere. Beyond media, WebRTC also supports bidirectional data exchange,
+so we expose our control API over the same connection. A remote app can
+therefore drive the robot, not just watch it.
+
+WebRTC aims for a peer-to-peer connection between the robot and the app, which
+keeps latency low. We use your Hugging Face account only to pair your robot with
+the app on a
+[signaling server](https://huggingface.co/spaces/pollen-robotics/reachy_mini_central):
+it identifies the two endpoints so they can find each other. Even when
+everything runs on your local network, the two peers still need this initial
+introduction. Once it's done, the media flows directly between them and your
+account plays no further part. Whether the media really flows directly depends
+on where the app runs, as the next two sections explain.
+
+<Note variant="info" emoji="🤝" title="Signaling server">
+Before two peers can talk directly, they first have to find each other and agree
+on how to connect (network addresses, codecs, encryption keys). The signaling
+server is the matchmaker that relays this initial handshake. It only carries the
+setup messages, never the audio or video itself.
+</Note>
+
+### JavaScript apps
+
+The [`reachy-mini-sdk`](https://www.npmjs.com/package/@pollen-robotics/reachy-mini-sdk)
+package lets you connect TypeScript/JavaScript apps to Reachy Mini. The
+[WebRTC example](https://huggingface.co/spaces/cduss/webrtc_example) showcases
+the video stream, audio, and robot control.
+
+Combined with
+[Transformers.js](https://huggingface.co/docs/transformers.js/index), you can
+bring state-of-the-art models to your robot with very little effort. Thanks to
+WebGPU, advanced AI models can run directly in the browser, and because the
+connection stays peer-to-peer, the data never leaves your local network. For
+example, the
+[bedtime story generator](https://huggingface.co/spaces/pollen-robotics/bedtime-story-generator)
+relies on a local LLM (Gemma 3) and local TTS (Kokoro) to write and tell
+stories.
+
+<Video src="/assets/blog/media-stack/js-app-demo.mp4" aspect="16 / 9" loop>
+A JavaScript app running entirely in the browser, driving the robot and
+consuming its streams over WebRTC.
+</Video>
+
+Under the hood, our `reachy-mini-sdk.js` provides the WebRTC plumbing that
+consumes the audio/video stream from the robot. It also offers a `host` module
+that handles the connection to Hugging Face Spaces using your account.
+
+<Image
+  src="/assets/blog/media-stack/arch-web.webp"
+  alt="Web app connecting to Reachy Mini over WebRTC"
+  caption="A browser app connects to the robot over WebRTC, brokered by the signaling server, then streams media and control peer-to-peer."
+  width={734}
+  height={616}
+/>
+
+Running everything in the browser is great, but WebGPU is limited by the GPU in
+your machine, which may not be enough for larger models. That's where remote
+compute comes in.
+
+### Hugging Face Spaces
+
+A Space is, in short, a remote machine, and it can come with a powerful GPU. You
+can connect Reachy Mini to a Space to offload heavier, GPU-hungry tasks. For
+instance, the
+[object tracking example](https://huggingface.co/spaces/pollen-robotics/rf-detr-realtime-webcam)
+consumes the video stream over WebRTC and sends back a head pose so the robot
+follows a chosen object.
+
+Unlike a browser app, a Space runs in a data center rather than on your local
+network, so the robot and the Space usually can't reach each other directly. In
+that case the stream is relayed through a TURN server (we rely on the
+[fastrtc TURN service](https://huggingface.co/spaces/fastrtc/turn-service)). This
+adds a hop compared to the fully peer-to-peer browser path.
+
+<Note variant="info" emoji="🔁" title="TURN server">
+When two peers can't open a direct connection (because of firewalls, NAT, or one
+of them sitting in a data center), a TURN server steps in as a relay: both sides
+connect to it, and it forwards the media between them. It guarantees
+connectivity, at the cost of that extra hop.
+</Note>
+
+<Video src="/assets/blog/media-stack/object-tracking-space.mp4" aspect="16 / 9" loop>
+Object tracking offloaded to a GPU-backed Space: the robot streams its camera
+over WebRTC and receives back a head pose to follow the target.
+</Video>
+
+The big advantage of this approach is that the end user has nothing to install
+or download. Everything, including models that may weigh several gigabytes,
+lives in the Space. This makes Spaces a great way to share an AI-powered Reachy
+Mini app: anyone can try it from a browser, with the robot in the loop and the
+compute handled for them.
+
+<Quote>
+Local or remote compute is a trade-off between power, latency, and privacy.
+</Quote>
+
+## Streaming latency
+
+A key property of the video stream is the latency you experience before a frame
+reaches you. The lower the better. For any closed-loop interaction such as face
+tracking, frames need to arrive as quickly as possible.
+
+We measure latency end to end as _glass-to-glass_ latency: how long an image
+takes to travel from the camera lens (the first glass) to the screen (the last
+glass). To capture this, we built a
+[simple device](https://github.com/pollen-robotics/G2GDelay) made of an LED and
+a photoresistor. Because the device sits outside our system (it times how long
+the LED's flash takes to reach the photoresistor), it gives a true, end-to-end
+measurement.
+
+<Image
+  src="/assets/blog/media-stack/latency-device.webp"
+  alt="A simple LED and photoresistor device to measure glass-to-glass latency"
+  caption="Our glass-to-glass latency rig: an LED and a photoresistor time how long a flash takes to travel from the camera to the screen."
+  width={640}
+  height={480}
+/>
+
+For this test we used a Reachy Mini Wireless and a JavaScript app running in
+Chrome on a Windows laptop. The laptop's GPU was an Intel® UHD Graphics (TGL
+GT1) with a hardware H.264 decoder. The robot and laptop were on the same local
+network over consumer Wi-Fi (5 GHz), on a 140 Hz monitor.
+
+We measured a total latency of around 100 ms.
+
+This number can vary a lot depending on your setup. Roughly, latency comes from
+three places:
+
+- **Sender (the robot).** The hardware is fixed, but a few milliseconds can be
+  saved by tuning the camera driver, the encoder, or the GStreamer pipeline at a
+  low level, mainly by avoiding extra copies and useless processing.
+- **Network.** This depends heavily on the connection quality and the path from
+  the robot to the client. On a local network, it helps to connect Reachy over
+  Wi-Fi and the computer by wire to the router. Over long distances (across the
+  internet), WebRTC's congestion control can compensate for delay by lowering
+  the video bitrate, though on the Raspberry Pi this will only land with a
+  [patch](https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs/-/merge_requests/2893)
+  we recently pushed. One parameter worth tuning here is the _jitter buffer_,
+  which absorbs the variation in packet arrival times: the rougher the network,
+  the larger it needs to be, trading a little extra latency for smoother
+  playback. Looking ahead, the [QUIC protocol](https://en.wikipedia.org/wiki/QUIC),
+  designed with low-latency challenges in mind, could become an alternative to
+  WebRTC, and a [GStreamer plugin already exists](https://github.com/moq-dev/moq).
+  Our first tests in local-network conditions didn't show a significant
+  improvement, though.
+- **Client.** Once a frame arrives, it has to be decoded, and how long that
+  takes depends on your hardware: a discrete GPU is faster than an integrated
+  one. After that,
+  [getting the frame onto the display](https://www.nvidia.com/en-us/geforce/guides/system-latency-optimization-guide/)
+  has its own latency.
+
+## Conclusion
+
+This post gave an overview of the design choices that let the Lite and Wireless
+versions of Reachy Mini work seamlessly, locally or remotely. The result is a
+single, consistent API on top of audio and video streams you can consume from
+Python or the browser, and a clear path to building AI apps on top of them,
+whether you run your model on the robot, on your laptop, or on a Hugging Face
+Space.
+
+As always with Pollen, all the code is
+[open source](https://github.com/pollen-robotics/reachy_mini).
+
+## Spaces mentioned in this article
+
+- [Reachy Mini WebRTC Demo](https://huggingface.co/spaces/cduss/webrtc_example)
+  - single-file WebRTC demo: sign in with Hugging Face and drive the robot.
+- [Turn Service](https://huggingface.co/spaces/fastrtc/turn-service)
+  - TURN credentials powered by Cloudflare.
+- [Bedtime Story Generator](https://huggingface.co/spaces/pollen-robotics/bedtime-story-generator)
+  - craft magical tales in seconds, fully in the browser.
+- [Reachy Mini Central](https://huggingface.co/spaces/pollen-robotics/reachy_mini_central)
+  - stream robot events and send commands via WebRTC.
+- [RF-DETR Realtime Webcam Demo](https://huggingface.co/spaces/pollen-robotics/rf-detr-realtime-webcam)
+  - detect and track objects in a live webcam or uploaded media.
+
+<HfUserList>
+  <HfUser username="FabienDanieau" name="Fabien Danieau" />
+  <HfUser username="alozowski" name="Alina Lozovskaya" />
+  <HfUser username="CarolinePascal" name="Caroline Pascal" />
+  <HfUser username="apirrone" name="Antoine Pirrone" />
+</HfUserList>

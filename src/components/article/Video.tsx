@@ -12,18 +12,25 @@ export default function Video({
   src,
   aspect,
   maxWidth,
+  loop = false,
   children,
 }: {
   src: string;
   aspect?: string;
   maxWidth?: number;
+  // When true, behaves like an animated GIF: autoplay, muted, looping, no
+  // controls. Otherwise a standard video with playback controls.
+  loop?: boolean;
   children?: ReactNode;
 }) {
+  const gifLike = loop
+    ? { autoPlay: true, loop: true, muted: true, controls: false }
+    : { controls: true };
   return (
     <Box component="figure" sx={{ m: 0, my: 3 }}>
       <Box
         component="video"
-        controls
+        {...gifLike}
         playsInline
         preload="metadata"
         sx={{

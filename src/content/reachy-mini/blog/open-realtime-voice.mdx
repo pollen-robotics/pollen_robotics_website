@@ -1,0 +1,63 @@
+---
+title: "Reachy Mini talks with an open realtime voice"
+description: "Reachy Mini's conversation currently runs on a single backend: our own open, OpenAI-Realtime-compatible voice engine. Here's the short version, with a pointer to the full deep dive."
+cover: "/assets/blog/cover-open-voice-v2.webp"
+date: "2026-07-15"
+authors:
+  - name: "Pollen Robotics"
+    url: "https://huggingface.co/pollen-robotics"
+  - name: "Hugging Face"
+    url: "https://huggingface.co"
+tags:
+  - "Conversation"
+  - "Voice"
+  - "Open Source"
+---
+
+Reachy Mini can listen and talk back. Right now, that conversation runs on a
+single backend: **Hugging Voice**, our own open realtime voice engine. It's the
+same stack we use in production across the whole fleet, and it's the only one we
+support for now.
+
+<Note variant="info" title="One backend, fully open">
+Reachy Mini's conversation currently supports **only** the open realtime voice
+backend described below. It's OpenAI-Realtime-compatible, so existing clients
+connect with a single line change, and it's fully open source and swappable.
+</Note>
+
+Why build our own instead of just calling a hosted API? Scale and cost. A few
+lines straight from the team behind it:
+
+<Quote source="Hugging Voice">
+We've shipped 9,000 Reachy Minis with conversation capabilities. Together, they
+now generate 15k hours of conversation every month. On GPT-realtime, that would
+cost at least $45k a month. So we built our own 'gpt-realtime': we
+reverse-engineered the OpenAI Realtime protocol, so existing clients connect
+with a single line change, but the backend is a fully open, end-to-end cascade
+we control - VAD, STT, LLM, and TTS, each swappable. Today, it costs us
+$0.25/hour to serve, and if you run it locally, which you can, it costs you
+nothing but electricity.
+</Quote>
+
+What that means for Reachy Mini today:
+
+- **One-line migration.** The engine speaks the exact same protocol as OpenAI's
+  realtime API, so switching a client is just changing the URI.
+- **Swappable models.** The voice layer never changes; only the text-in,
+  text-out LLM in the middle does. Hosted provider, HF Inference Providers, or a
+  local vLLM / llama.cpp / MLX model - your choice.
+- **Runs locally.** The whole cascade can run on your own machine, so
+  conversation audio never has to leave the robot's network.
+
+## Want the full story?
+
+This post is just the headline. The engineering deep dive - how they
+reverse-engineered the Realtime API, the latency budget, tool calling,
+barge-in, and multilingual support - lives in the original article:
+
+**[An Open Realtime Voice You Can Actually Run Yourself](https://huggingface.co/spaces/HuggingFaceM4/hugging-voice)**
+
+The code is open source (Apache 2.0) at
+[huggingface/speech-to-speech](https://github.com/huggingface/speech-to-speech).
+Point your existing Realtime client at it, or run the whole thing on your laptop
+tonight.

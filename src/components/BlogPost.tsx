@@ -41,6 +41,16 @@ function formatDate(date: string): string {
 
 type Children = { children?: React.ReactNode };
 
+// Anchors injected around headings by rehype-autolink must not pick up the
+// primary link color; they inherit the heading's own (text) color.
+const HEADING_ANCHOR_SX = {
+  color: "inherit",
+  textDecoration: "none",
+  background: "none",
+  borderBottom: "none",
+  "&:hover": { color: "inherit", textDecoration: "none", borderBottom: "none" },
+} as const;
+
 // Author-facing components (usable in MDX without importing) plus the
 // Markdown-element -> MUI mapping so posts inherit each zone's theme.
 const components = {
@@ -60,19 +70,84 @@ const components = {
   Glossary,
   Video,
 
-  // Markdown elements
-  h1: ({ children }: Children) => (
-    <Typography variant="h4" component="h2" sx={{ fontWeight: 700, mt: 5, mb: 2, scrollMarginTop: "96px" }}>
+  // Markdown elements. Heading sizes/weights mirror the research-article-template
+  // (_base.css). rehype-autolink wraps heading text in an <a>; keep it inherit so
+  // headings never render in the primary/accent color.
+  h1: ({ children, ...props }: Children) => (
+    <Typography
+      component="h2"
+      {...props}
+      sx={{
+        color: "var(--article-text)",
+        fontWeight: 600,
+        fontSize: "clamp(22px, 2.6vw, 32px)",
+        lineHeight: 1.2,
+        mt: 6,
+        mb: 2.5,
+        pb: 1,
+        borderBottom: "1px solid var(--article-border)",
+        scrollMarginTop: "96px",
+        "& a": HEADING_ANCHOR_SX,
+      }}
+    >
       {children}
     </Typography>
   ),
   h2: ({ children, ...props }: Children) => (
-    <Typography variant="h5" component="h2" {...props} sx={{ fontWeight: 700, mt: 5, mb: 1.5, scrollMarginTop: "96px" }}>
+    <Typography
+      component="h2"
+      {...props}
+      sx={{
+        color: "var(--article-text)",
+        fontWeight: 600,
+        fontSize: "clamp(22px, 2.6vw, 32px)",
+        lineHeight: 1.2,
+        mt: 6,
+        mb: 2.5,
+        pb: 1,
+        borderBottom: "1px solid var(--article-border)",
+        scrollMarginTop: "96px",
+        "& a": HEADING_ANCHOR_SX,
+      }}
+    >
       {children}
     </Typography>
   ),
   h3: ({ children, ...props }: Children) => (
-    <Typography variant="h6" component="h3" {...props} sx={{ fontWeight: 700, mt: 3.5, mb: 1, scrollMarginTop: "96px" }}>
+    <Typography
+      component="h3"
+      {...props}
+      sx={{
+        color: "var(--article-text)",
+        fontWeight: 700,
+        fontSize: "clamp(18px, 2.1vw, 22px)",
+        lineHeight: 1.25,
+        mt: 4.5,
+        mb: 2,
+        scrollMarginTop: "96px",
+        "& a": HEADING_ANCHOR_SX,
+      }}
+    >
+      {children}
+    </Typography>
+  ),
+  h4: ({ children, ...props }: Children) => (
+    <Typography
+      component="h4"
+      {...props}
+      sx={{
+        color: "var(--article-text)",
+        fontWeight: 600,
+        fontSize: "16px",
+        textTransform: "uppercase",
+        letterSpacing: "0.02em",
+        lineHeight: 1.2,
+        mt: 3,
+        mb: 2,
+        scrollMarginTop: "96px",
+        "& a": HEADING_ANCHOR_SX,
+      }}
+    >
       {children}
     </Typography>
   ),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type MouseEvent } from "react";
-import { Box } from "@mui/material";
+import { Box, Collapse } from "@mui/material";
 
 /**
  * Table of Contents, ported 1:1 (behaviour + look) from the
@@ -35,6 +35,20 @@ function buildTree(items: { id: string; text: string; level: number }[]): TocNod
     stack.push(node);
   }
   return root.children;
+}
+
+/**
+ * Return the id path (ancestors + node itself) from the tree root down to the
+ * node matching `id`, or an empty array if not found. Used to decide which
+ * branches stay expanded in auto-collapse mode.
+ */
+function findPath(nodes: TocNode[], id: string): string[] {
+  for (const n of nodes) {
+    if (n.id === id) return [n.id];
+    const sub = findPath(n.children, id);
+    if (sub.length) return [n.id, ...sub];
+  }
+  return [];
 }
 
 /**
@@ -106,11 +120,17 @@ function useToc() {
 function TocList({
   nodes,
   activeId,
+  expandedSet,
+  collapsible,
   depth = 0,
   onNavigate,
 }: {
   nodes: TocNode[];
   activeId: string;
+  /** Ids whose child branch must stay open (active section + ancestors). */
+  expandedSet: Set<string>;
+  /** When false, everything is expanded (used on mobile). */
+  collapsible: boolean;
   depth?: number;
   onNavigate?: () => void;
 }) {
@@ -125,6 +145,17 @@ function TocList({
     >
       {nodes.map((node) => {
         const isActive = node.id === activeId;
+        const hasChildren = node.children.length > 0;
+        const childList = hasChildren ? (
+          <TocList
+            nodes={node.children}
+            activeId={activeId}
+            expandedSet={expandedSet}
+            collapsible={collapsible}
+            depth={depth + 1}
+            onNavigate={onNavigate}
+          />
+        ) : null;
         return (
           <Box component="li" key={node.id} sx={{ m: "0.3em 0" }}>
             <Box
@@ -150,14 +181,14 @@ function TocList({
             >
               {node.text}
             </Box>
-            {node.children.length > 0 && (
-              <TocList
-                nodes={node.children}
-                activeId={activeId}
-                depth={depth + 1}
-                onNavigate={onNavigate}
-              />
-            )}
+            {hasChildren &&
+              (collapsible ? (
+                <Collapse in={expandedSet.has(node.id)} timeout={200} unmountOnExit={false}>
+                  {childList}
+                </Collapse>
+              ) : (
+                childList
+              ))}
           </Box>
         );
       })}
@@ -169,15 +200,18 @@ function TocList({
 export function TocDesktop() {
   const { tree, activeId } = useToc();
   if (tree.length === 0) return null;
+  // Auto-collapse: keep only the active section's branch (itself + ancestors)
+  // expanded, matching the research-article-template default behaviour.
+  const expandedSet = new Set(findPath(tree, activeId));
   return (
     <Box
       component="nav"
       aria-label="Table of Contents"
       sx={{
         position: "sticky",
-        top: 120,
-        maxHeight: "calc(100vh - 160px)",
-        overflowY: "auto",
+        // Sit a little below the sticky chrome (Pollen strip + Reachy header
+        // ~132px) so the TOC isn't glued to the very top once scrolled.
+        top: 168,
         borderLeft: "1px solid var(--article-border)",
         pl: 2,
         fontSize: 13,
@@ -186,7 +220,7 @@ export function TocDesktop() {
       <Box sx={{ fontWeight: 600, fontSize: 14, mb: 1, color: "var(--article-text)" }}>
         Table of Contents
       </Box>
-      <TocList nodes={tree} activeId={activeId} />
+      <TocList nodes={tree} activeId={activeId} expandedSet={expandedSet} collapsible />
     </Box>
   );
 }
@@ -329,7 +363,13 @@ export function TocMobile() {
           </Box>
         </Box>
         <Box sx={{ flex: 1, overflowY: "auto", px: 2.5, py: 2, fontSize: 14 }}>
-          <TocList nodes={tree} activeId={activeId} onNavigate={() => setOpen(false)} />
+          <TocList
+            nodes={tree}
+            activeId={activeId}
+            expandedSet={new Set()}
+            collapsible={false}
+            onNavigate={() => setOpen(false)}
+          />
         </Box>
       </Box>
     </>

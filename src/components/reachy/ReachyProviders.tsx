@@ -33,7 +33,12 @@ export default function ReachyProviders({
       <CssBaseline />
       <AuthProvider>
         <AppsProvider initialApps={initialApps}>
-          <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", overflowX: "hidden" }}>
+          {/* NB: no `overflowX: hidden` here - a non-visible overflow on this
+              tall wrapper would become the scroll container and break
+              `position: sticky` for the article TOC. Horizontal overflow is
+              already clipped at the root via `html/body { overflow-x: hidden }`
+              in the theme's CssBaseline. */}
+          <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             {/* Shared Pollen strip, floating over the Reachy hero so the video
                 shows through; the Reachy product header sits 44px below it. */}
             <PollenHeader active="reachy" overlay transparentAtTop={transparent} />

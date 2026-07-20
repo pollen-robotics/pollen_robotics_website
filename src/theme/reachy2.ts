@@ -33,8 +33,8 @@ const reachy2Theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        html: { overflowX: "hidden" },
-        body: { overflowX: "hidden" },
+        html: { overflowX: "clip" },
+        body: { overflowX: "clip" },
       },
     },
     MuiButton: {

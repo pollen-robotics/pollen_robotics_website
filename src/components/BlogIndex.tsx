@@ -12,11 +12,202 @@ function formatDate(date: string): string {
   return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
-function meta(post: PostMeta): string {
+function metaLine(post: PostMeta): string {
   const parts: string[] = [];
   if (post.date) parts.push(formatDate(post.date));
   if (post.readingTime) parts.push(`${post.readingTime} min read`);
   return parts.join(" \u00b7 ");
+}
+
+function Cover({ src, ratio = "16 / 9" }: { src?: string; ratio?: string }) {
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        aspectRatio: ratio,
+        borderRadius: "12px",
+        overflow: "hidden",
+        bgcolor: "action.hover",
+      }}
+    >
+      {src && (
+        <Box
+          component="img"
+          className="cover-img"
+          src={src}
+          alt=""
+          loading="lazy"
+          sx={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transition: "transform 0.4s ease",
+          }}
+        />
+      )}
+    </Box>
+  );
+}
+
+function Tags({ tags }: { tags: string[] }) {
+  if (!tags.length) return null;
+  return (
+    <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
+      {tags.map((tag) => (
+        <Chip
+          key={tag}
+          label={tag}
+          size="small"
+          sx={{
+            height: 24,
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            letterSpacing: "0.02em",
+            textTransform: "uppercase",
+            color: "primary.main",
+            bgcolor: "transparent",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        />
+      ))}
+    </Stack>
+  );
+}
+
+function cardLinkSx() {
+  return {
+    color: "text.primary",
+    display: "block",
+    height: "100%",
+    "&:hover .cover-img": { transform: "scale(1.04)" },
+    "&:hover .card-title": { color: "primary.main" },
+  } as const;
+}
+
+function FeaturedCard({ post, href }: { post: PostMeta; href: string }) {
+  return (
+    <MuiLink component={NextLink} href={href} underline="none" sx={cardLinkSx()}>
+      <Box
+        component="article"
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1.15fr 1fr" },
+          gap: { xs: 2.5, md: 5 },
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            position: "relative",
+            width: "100%",
+            aspectRatio: "16 / 10",
+            borderRadius: "12px",
+            overflow: "hidden",
+            bgcolor: "action.hover",
+          }}
+        >
+          {post.cover && (
+            <Box
+              component="img"
+              className="cover-img"
+              src={post.cover}
+              alt=""
+              sx={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transition: "transform 0.4s ease",
+              }}
+            />
+          )}
+        </Box>
+
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Tags tags={post.tags} />
+          <Typography
+            className="card-title"
+            variant="h4"
+            component="h2"
+            sx={{
+              fontWeight: 700,
+              lineHeight: 1.15,
+              transition: "color 0.2s ease",
+              fontSize: { xs: "1.6rem", md: "2rem" },
+            }}
+          >
+            {post.title}
+          </Typography>
+          {post.description && (
+            <Typography
+              sx={{
+                color: "text.secondary",
+                lineHeight: 1.6,
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {post.description}
+            </Typography>
+          )}
+          {metaLine(post) && (
+            <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+              {metaLine(post)}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+    </MuiLink>
+  );
+}
+
+function Card({ post, href }: { post: PostMeta; href: string }) {
+  return (
+    <MuiLink component={NextLink} href={href} underline="none" sx={cardLinkSx()}>
+      <Box
+        component="article"
+        sx={{ display: "flex", flexDirection: "column", gap: 1.5, height: "100%" }}
+      >
+        <Cover src={post.cover} />
+        <Tags tags={post.tags} />
+        <Typography
+          className="card-title"
+          variant="h6"
+          component="h3"
+          sx={{ fontWeight: 700, lineHeight: 1.25, transition: "color 0.2s ease" }}
+        >
+          {post.title}
+        </Typography>
+        {post.description && (
+          <Typography
+            variant="body2"
+            sx={{
+              color: "text.secondary",
+              lineHeight: 1.6,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {post.description}
+          </Typography>
+        )}
+        {metaLine(post) && (
+          <Typography variant="caption" sx={{ color: "text.secondary", mt: "auto", pt: 0.5 }}>
+            {metaLine(post)}
+          </Typography>
+        )}
+      </Box>
+    </MuiLink>
+  );
 }
 
 export default function BlogIndex({
@@ -30,12 +221,14 @@ export default function BlogIndex({
   posts: PostMeta[];
   hero?: ReactNode;
 }) {
+  const [featured, ...rest] = posts;
+
   return (
     <>
       {hero}
-      <Container maxWidth="md" sx={{ py: { xs: 6, md: 10 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 9 } }}>
         {!hero && (
-          <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 4 }}>
+          <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 5 }}>
             {title}
           </Typography>
         )}
@@ -43,68 +236,41 @@ export default function BlogIndex({
         {posts.length === 0 ? (
           <Typography sx={{ color: "text.secondary" }}>No posts yet.</Typography>
         ) : (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            {posts.map((post) => (
-              <MuiLink
-                key={post.slug}
-                component={NextLink}
-                href={`${basePath}/${post.slug}`}
-                underline="none"
-                sx={{
-                  color: "text.primary",
-                  display: "block",
-                  borderRadius: "8px",
-                  transition: "transform 0.2s ease",
-                  "&:hover": { transform: "translateY(-2px)" },
-                  "&:hover .blog-card-title": { color: "primary.main" },
-                }}
-              >
-                <Box component="article">
-                  {post.cover && (
-                    <Box
-                      component="img"
-                      src={post.cover}
-                      alt=""
-                      loading="lazy"
-                      sx={{
-                        display: "block",
-                        width: "100%",
-                        height: "auto",
-                        aspectRatio: "16 / 9",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                        mb: 2,
-                      }}
-                    />
-                  )}
-                  {post.tags.length > 0 && (
-                    <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1, mb: 1 }}>
-                      {post.tags.map((tag) => (
-                        <Chip key={tag} label={tag} size="small" variant="outlined" />
-                      ))}
-                    </Stack>
-                  )}
-                  <Typography
-                    className="blog-card-title"
-                    variant="h5"
-                    sx={{ fontWeight: 700, mb: 0.5, transition: "color 0.2s ease" }}
-                  >
-                    {post.title}
-                  </Typography>
-                  {meta(post) && (
-                    <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
-                      {meta(post)}
-                    </Typography>
-                  )}
-                  {post.description && (
-                    <Typography sx={{ color: "text.secondary", lineHeight: 1.6 }}>
-                      {post.description}
-                    </Typography>
-                  )}
+          <>
+            {featured && (
+              <Box sx={{ mb: { xs: 6, md: 8 } }}>
+                <FeaturedCard post={featured} href={`${basePath}/${featured.slug}`} />
+              </Box>
+            )}
+
+            {rest.length > 0 && (
+              <>
+                <Box
+                  sx={{
+                    height: "1px",
+                    bgcolor: "divider",
+                    mb: { xs: 5, md: 6 },
+                  }}
+                />
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "1fr",
+                      sm: "repeat(2, 1fr)",
+                      md: "repeat(3, 1fr)",
+                    },
+                    columnGap: 4,
+                    rowGap: { xs: 5, md: 6 },
+                  }}
+                >
+                  {rest.map((post) => (
+                    <Card key={post.slug} post={post} href={`${basePath}/${post.slug}`} />
+                  ))}
                 </Box>
-              </MuiLink>
-            ))}
-          </Box>
+              </>
+            )}
+          </>
         )}
       </Container>
     </>
