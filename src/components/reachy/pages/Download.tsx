@@ -15,6 +15,7 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
+import ImageWithSpinner from "@/components/ImageWithSpinner";
 import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -419,6 +420,9 @@ export default function Download() {
               backgroundClip: "text",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
+              // Room for descenders (the "y") under gradient-clipped text.
+              lineHeight: 1.2,
+              pb: "0.1em",
             }}
           >
             Reachy Mini Control
@@ -538,11 +542,12 @@ export default function Download() {
             </>
           )}
 
-          <Box
-            component="img"
+          <ImageWithSpinner
             src="/assets/desktop-app-screenshot--white.png"
             alt="Reachy Mini Control Dashboard"
-            sx={{ mt: 6, width: "100%", maxWidth: 700, mx: "auto", display: "block", borderRadius: "12px" }}
+            spinnerColor="primary.main"
+            containerSx={{ mt: 6, width: "100%", maxWidth: 700, mx: "auto", minHeight: 200 }}
+            sx={{ width: "100%", display: "block", borderRadius: "12px" }}
           />
         </Box>
 

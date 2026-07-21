@@ -17,6 +17,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
+import ImageWithSpinner from "@/components/ImageWithSpinner";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import DownloadIcon from "@mui/icons-material/Download";
 import DesktopWindowsIcon from "@mui/icons-material/DesktopWindows";
@@ -357,10 +358,11 @@ export default function GettingStarted() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Box
-                    component="img"
+                  <ImageWithSpinner
                     src="/assets/desktop-app-screenshot--dark.png"
                     alt="Reachy Mini Control App"
+                    spinnerColor="primary.main"
+                    containerSx={{ width: "100%", minHeight: 200 }}
                     sx={{ width: "100%", display: "block", borderRadius: "12px" }}
                   />
                 </Grid>
@@ -525,10 +527,11 @@ export default function GettingStarted() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Box
-                    component="img"
+                  <ImageWithSpinner
                     src="/assets/desktop-app-screenshot--dark.png"
                     alt="Reachy Mini Control App"
+                    spinnerColor="primary.main"
+                    containerSx={{ width: "100%", minHeight: 200 }}
                     sx={{ width: "100%", display: "block", borderRadius: "12px" }}
                   />
                 </Grid>

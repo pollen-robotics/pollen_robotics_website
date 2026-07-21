@@ -265,6 +265,10 @@ export default function PageHero({
             background: "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
+            // Gradient text clips its fill to the line box; without a bit of room
+            // the tight h1 line-height slices descenders (g, y, p).
+            lineHeight: 1.2,
+            pb: "0.1em",
           }}
         >
           {title}

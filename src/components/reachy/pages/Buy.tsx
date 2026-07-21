@@ -204,6 +204,9 @@ function HeroSection() {
               backgroundClip: "text",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
+              // Room for descenders (the "y") under gradient-clipped text.
+              lineHeight: 1.2,
+              pb: "0.1em",
             }}
           >
             Buy Reachy Mini

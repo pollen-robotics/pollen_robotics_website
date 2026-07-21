@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Box, Button, Typography } from "@mui/material";
+import ImageWithSpinner from "@/components/ImageWithSpinner";
+import VideoWithSpinner from "@/components/VideoWithSpinner";
 
 export const metadata: Metadata = {
   title: "Reachy 2 - The open-source humanoid for embodied AI",
@@ -149,7 +151,12 @@ function KitCard({
       }}
     >
       <Box sx={{ aspectRatio: "1 / 1", "& img": { width: "100%", height: "100%", objectFit: "cover", display: "block" } }}>
-        <img src={img} alt={name} loading="lazy" />
+        <ImageWithSpinner
+          src={img}
+          alt={name}
+          spinnerColor="rgba(0,0,0,0.26)"
+          containerSx={{ width: "100%", height: "100%" }}
+        />
       </Box>
       <Box sx={{ p: 2.5 }}>
         <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "primary.main" }}>
@@ -265,14 +272,15 @@ export default function Reachy2Page() {
               "& img": { width: "100%", height: "100%", objectFit: "cover", display: "block" },
             }}
           >
-            <Box
-              component="video"
+            <VideoWithSpinner
               src={`${ASSET}/reachy2-orange-grasp.mp4`}
               autoPlay
               muted
               loop
               playsInline
               aria-label="Reachy 2 grasping an orange"
+              spinnerColor="rgba(255,255,255,0.6)"
+              containerSx={{ width: "100%", height: "100%" }}
               sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
           </Box>
@@ -330,7 +338,12 @@ export default function Reachy2Page() {
             body="Take control of Reachy 2 remotely using VR and our teleoperation application. Move its arms, hands and head, and see through Reachy's cameras to interact with the environment around the robot."
             media={
               <MediaCard>
-                <img src={`${ASSET}/vr-teleop.webp`} alt="A person teleoperating Reachy 2 with a VR headset" loading="lazy" />
+                <ImageWithSpinner
+                  src={`${ASSET}/vr-teleop.webp`}
+                  alt="A person teleoperating Reachy 2 with a VR headset"
+                  spinnerColor="rgba(0,0,0,0.26)"
+                  containerSx={{ width: "100%", height: "100%" }}
+                />
               </MediaCard>
             }
           />
@@ -341,13 +354,15 @@ export default function Reachy2Page() {
             body="With 7 degrees of freedom, Reachy 2's arms mirror the dimensions, proportions and movements of an adult human arm. One arm can lift objects up to 3 kg and manipulate them with real dexterity."
             media={
               <MediaCard>
-                <video
+                <VideoWithSpinner
                   src={`${ASSET}/reachy2-arm.mp4`}
                   autoPlay
                   muted
                   loop
                   playsInline
                   aria-label="Reachy 2 arm grasping an apple with its gripper"
+                  spinnerColor="rgba(0,0,0,0.26)"
+                  containerSx={{ width: "100%", height: "100%" }}
                 />
               </MediaCard>
             }
@@ -358,13 +373,15 @@ export default function Reachy2Page() {
             body="Reachy 2 is available on an omnidirectional mobile base for a wider working space. Three omniwheels, a cylinder-like structure, a suite of sensors and a LiDAR make navigation effortless."
             media={
               <MediaCard>
-                <video
+                <VideoWithSpinner
                   src={`${ASSET}/reachy2-mobility.mp4`}
                   autoPlay
                   muted
                   loop
                   playsInline
                   aria-label="Reachy 2 moving around on its mobile base"
+                  spinnerColor="rgba(0,0,0,0.26)"
+                  containerSx={{ width: "100%", height: "100%" }}
                 />
               </MediaCard>
             }

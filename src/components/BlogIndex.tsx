@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import NextLink from "next/link";
 import { Box, Container, Typography, Chip, Stack, Link as MuiLink } from "@mui/material";
+import ImageWithSpinner from "@/components/ImageWithSpinner";
 import type { PostMeta } from "@/lib/blog";
 
 function formatDate(date: string): string {
@@ -32,12 +33,12 @@ function Cover({ src, ratio = "16 / 9" }: { src?: string; ratio?: string }) {
       }}
     >
       {src && (
-        <Box
-          component="img"
+        <ImageWithSpinner
           className="cover-img"
           src={src}
           alt=""
-          loading="lazy"
+          spinnerColor="rgba(0,0,0,0.26)"
+          containerSx={{ position: "absolute", inset: 0 }}
           sx={{
             position: "absolute",
             inset: 0,
@@ -111,11 +112,12 @@ function FeaturedCard({ post, href }: { post: PostMeta; href: string }) {
           }}
         >
           {post.cover && (
-            <Box
-              component="img"
+            <ImageWithSpinner
               className="cover-img"
               src={post.cover}
               alt=""
+              spinnerColor="rgba(0,0,0,0.26)"
+              containerSx={{ position: "absolute", inset: 0 }}
               sx={{
                 position: "absolute",
                 inset: 0,

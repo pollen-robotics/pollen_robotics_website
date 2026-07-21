@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Box, Button, Typography } from "@mui/material";
+import ImageWithSpinner from "@/components/ImageWithSpinner";
+import VideoWithSpinner from "@/components/VideoWithSpinner";
 import { POLLEN_MARK, HF_LOGO } from "@/lib/brand";
 
 export const metadata: Metadata = {
@@ -297,16 +299,15 @@ export default function LandingPage() {
           body="An expressive companion robot for human interaction, creative coding and AI experimentation."
           cta="Discover Reachy Mini"
           media={
-            <Box
-              component="video"
+            <VideoWithSpinner
+              src="/assets/Reachy-mini-wake-up-companion.mp4"
               autoPlay
               muted
               loop
               playsInline
-              poster="/assets/idle-reachy.gif"
-            >
-              <source src="/assets/Reachy-mini-wake-up-companion.mp4" type="video/mp4" />
-            </Box>
+              spinnerColor="rgba(0,0,0,0.26)"
+              containerSx={{ width: "100%", height: "100%" }}
+            />
           }
         />
         <ProductCard
@@ -315,7 +316,14 @@ export default function LandingPage() {
           name="Reachy 2"
           body="A human-scale, bimanual mobile manipulator - the ideal robot for AI & robotics labs building embodied AI."
           cta="Explore Reachy 2"
-          media={<img src="/assets/reachy2/full-robot.webp" alt="Reachy 2 humanoid robot" />}
+          media={
+            <ImageWithSpinner
+              src="/assets/reachy2/full-robot.webp"
+              alt="Reachy 2 humanoid robot"
+              spinnerColor="rgba(0,0,0,0.26)"
+              containerSx={{ position: "absolute", inset: 0 }}
+            />
+          }
         />
       </Box>
 

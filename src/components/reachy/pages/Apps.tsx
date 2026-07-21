@@ -699,6 +699,9 @@ export default function AppsPage() {
                   background: "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
+                  // Room for descenders (the "pp") under gradient-clipped text.
+                  lineHeight: 1.2,
+                  pb: "0.1em",
                 }}
               >
                 Applications

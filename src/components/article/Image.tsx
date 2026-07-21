@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Box, Modal } from "@mui/material";
+import ImageWithSpinner from "@/components/ImageWithSpinner";
 
 /**
  * Article image with caption, reserved aspect ratio (no layout shift) and
@@ -28,18 +29,23 @@ export default function Image({
 
   return (
     <Box component="figure" sx={{ my: 4, mx: 0 }}>
-      <Box
-        component="img"
+      <ImageWithSpinner
         src={src}
         alt={alt}
-        loading="lazy"
         onClick={zoom ? () => setOpen(true) : undefined}
+        spinnerColor="rgba(0,0,0,0.26)"
+        containerSx={{
+          width: "100%",
+          borderRadius: "6px",
+          overflow: "hidden",
+          ...(ratio ? { aspectRatio: ratio } : { minHeight: 120 }),
+        }}
         sx={{
           display: "block",
           width: "100%",
-          height: "auto",
+          height: ratio ? "100%" : "auto",
+          objectFit: ratio ? "cover" : undefined,
           aspectRatio: ratio,
-          borderRadius: "6px",
           cursor: zoom ? "zoom-in" : "default",
         }}
       />

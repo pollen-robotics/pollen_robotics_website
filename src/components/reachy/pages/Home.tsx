@@ -17,6 +17,8 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import PublicIcon from "@mui/icons-material/Public";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import Section from "@/components/reachy/Section";
+import ImageWithSpinner from "@/components/ImageWithSpinner";
+import VideoWithSpinner from "@/components/VideoWithSpinner";
 import { useApps } from "@/context/AppsContext";
 
 const BASE = "/reachy-mini";
@@ -116,12 +118,14 @@ function HeroDesktop() {
         },
       }}
     >
-      <Box
-        component="video"
+      <VideoWithSpinner
+        src="/assets/Reachy-mini-wake-up-companion.mp4"
         autoPlay
         muted
         loop
         playsInline
+        spinnerColor="rgba(255,255,255,0.6)"
+        containerSx={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}
         sx={{
           position: "absolute",
           top: "50%",
@@ -133,9 +137,7 @@ function HeroDesktop() {
           opacity: 0.9,
           transform: `translate(-45%, calc(-50% + ${scrollY * 0.15}px))`,
         }}
-      >
-        <source src="/assets/Reachy-mini-wake-up-companion.mp4" type="video/mp4" />
-      </Box>
+      />
 
       <Box
         sx={{
@@ -181,6 +183,11 @@ function HeroDesktop() {
                 backgroundClip: "text",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
+                // Gradient text clips its fill to the line box; the theme's tight
+                // h1 line-height (1.05) would cut descenders (the "y"). Give the
+                // painted area room so lower letters aren't sliced.
+                lineHeight: 1.2,
+                pb: "0.1em",
               }}
             >
               Reachy Mini
@@ -286,13 +293,14 @@ function HeroMobile() {
         },
       }}
     >
-      <Box
-        component="video"
+      <VideoWithSpinner
+        src="/assets/Reachy-mini-wake-up-companion.mp4"
         autoPlay
         muted
         loop
         playsInline
-        poster="/assets/idle-reachy.gif"
+        spinnerColor="rgba(255,255,255,0.6)"
+        containerSx={{ position: "absolute", inset: 0, zIndex: 0 }}
         sx={{
           position: "absolute",
           inset: 0,
@@ -300,11 +308,8 @@ function HeroMobile() {
           height: "100%",
           objectFit: "cover",
           objectPosition: "50% 30%",
-          zIndex: 0,
         }}
-      >
-        <source src="/assets/Reachy-mini-wake-up-companion.mp4" type="video/mp4" />
-      </Box>
+      />
 
       <Box
         sx={{
@@ -543,11 +548,11 @@ function StatsSection() {
               "&:hover": { borderColor: "rgba(255,255,255,0.2)" },
             }}
           >
-            <Box
-              component="img"
+            <ImageWithSpinner
               src="/assets/reachy-mini-hand-tracking.gif"
               alt="Real-time interaction"
-              sx={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
+              containerSx={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+              sx={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
             <Box
               sx={{
@@ -962,10 +967,10 @@ function AppsShowcase() {
               overflow: "hidden",
             }}
           >
-            <Box
-              component="img"
+            <ImageWithSpinner
               src="/assets/reachy-conversation-app.jpg"
               alt="AI Companion"
+              containerSx={{ width: "100%", height: "100%" }}
               sx={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </Box>
@@ -1042,10 +1047,10 @@ function AppsShowcase() {
                   overflow: "hidden",
                 }}
               >
-                <Box
-                  component="img"
+                <ImageWithSpinner
                   src="/assets/reachy-hand-tracking-app.jpg"
                   alt="Hand Tracking"
+                  containerSx={{ width: "100%", height: "100%" }}
                   sx={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </Box>
