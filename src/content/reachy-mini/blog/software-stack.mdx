@@ -1,5 +1,5 @@
 ---
-title: "A Galaxy in your palm"
+title: "A galaxy in your palm"
 description: "Meet the ecosystem that makes Reachy Mini easy to use and easy to build for. No robotics background needed: the mobile app, the app store, a few ready-made apps, and how to vibe-code your own."
 cover: "/assets/blog/cover-software-stack.webp"
 date: "2026-07-20"
@@ -22,11 +22,8 @@ ecosystem** that has grown around it over the past year.
 
 The robot is only half the story. The other half is the galaxy around it: a
 **smartphone app** to set it up and talk to it, a **store** full of things it can
-do, and the **Hugging Face ecosystem** to back it all.
-
-This article walks through those pieces one by one, in the order you meet them as
-a new owner - the robot, the app you use it with, the galaxy of apps it opens up,
-and the way to make your own:
+do, and the **Hugging Face ecosystem** to back it all. This article walks through
+those pieces in the order you meet them as a new owner:
 
 <HtmlEmbed
   src="stack-visible-bricks.html"
@@ -46,6 +43,20 @@ Everything you do day to day starts here.
 
 <StoreBadges card appStore="https://apps.apple.com/app/id6766823749" googlePlay="https://play.google.com/store/apps/details?id=com.pollenrobotics.reachymini" />
 
+### First contact, over Bluetooth
+
+The very first thing to do with a brand-new robot is get it onto your Wi-Fi.
+We first shipped this as a desktop app, and we learned a lot from it - but a
+desktop app is one more thing to install, and its connection was never quite
+dependable enough. So we moved the whole first-contact flow onto **Bluetooth**,
+straight from the phone: the app discovers the robot over Bluetooth, you pick
+your network and hand over the password, and the robot joins your Wi-Fi. No
+cable, no desktop install - and it is far more reliable.
+
+<Stack layout="2-column" gap="large">
+<Video src="/videos/bluetooth-setup.mp4" aspect="1002 / 1720" maxWidth={300}>First contact over Bluetooth: the app finds the robot, you choose your Wi-Fi network, and the robot comes online - no cable, no desktop app.</Video>
+</Stack>
+
 ### One account, all your robots
 
 For your robot to show up in that list, it has to be signed into the **same
@@ -61,8 +72,8 @@ the world.
 
 Behind the scenes, it all goes through one small server in the middle. When your
 robot comes online, it announces itself there as one of yours; the app, signed
-into the same account, just asks that server which robots are yours - and that
-is the list you tap from.
+into the same account, just asks which robots are yours - and that is the list
+you tap from.
 
 Tapping one opens a direct connection between the app and the robot: the server
 introduces the two, then steps aside while the video, the sound and the movement
@@ -77,20 +88,6 @@ the exact same tap.
 
 We are also working on a fully-local mode that finds and connects to a robot on
 your own network, with no account and no central server at all.
-
-### First contact, over Bluetooth
-
-The very first thing to do with a brand-new robot is get it onto your Wi-Fi.
-We first shipped this as a desktop app, and we learned a lot from it - but a
-desktop app is one more thing to install, and its connection was never quite
-dependable enough. So we moved the whole first-contact flow onto **Bluetooth**,
-straight from the phone: the app discovers the robot over Bluetooth, you pick
-your network and hand over the password, and the robot joins your Wi-Fi. No
-cable, no desktop install - and it is far more reliable.
-
-<Stack layout="2-column" gap="large">
-<Video src="/videos/bluetooth-setup.mp4" aspect="1002 / 1720" maxWidth={300}>First contact over Bluetooth: the app finds the robot, you choose your Wi-Fi network, and the robot comes online - no cable, no desktop app.</Video>
-</Stack>
 
 ### The first wake-up
 
@@ -128,23 +125,17 @@ comes a name, a voice and a whole character - or, if nothing comes to mind, hit
 surprise-me and the app invents an original one for you. A few personas ship
 built in, and the ones you make are saved and swappable.
 
-### Drive it, and add to it
-
-Beyond conversation, the app lets you watch the camera feed and steer the head
-with an on-screen joystick, like a small remote-controlled companion. And it is
-your door to the app store: browse new apps and launch them straight onto the
-robot, no install (more on that later).
-
-### Lite or full: two robots, one ecosystem
+### Lite or wireless: two robots, one ecosystem
 
 There are two versions of the hardware, aimed at two kinds of people - but they
 share the exact same ecosystem.
 
 <HtmlEmbed src="stack-two-versions.html" />
 
-The only extra piece the lite needs is the **desktop app**, which runs the
-robot's software on your computer. All you have to do is connect to the robot in
-the desktop app and sign in with your Hugging Face account. From then on, as
+The only extra piece the lite needs is a **desktop app** - not the old
+first-contact tool, but one whose job is to run the robot's software on your
+computer. All you have to do is connect to the robot in the desktop app and sign
+in with your Hugging Face account. From then on, as
 long as the robot stays connected to the desktop app, it shows up in the mobile
 app and joins the exact same ecosystem as a wireless one.
 
@@ -158,7 +149,7 @@ install and nothing to update. You can also [browse the apps](/reachy-mini/apps)
 right here on the site to see what is already out there.
 
 <Stack layout="2-column" gap="large">
-<Video src="/videos/store.mp4" aspect="968 / 1700" maxWidth={300}>The app store, right inside the mobile app: browse the list, tap an app, and it runs on your robot right away.</Video>
+<Video src="/videos/store.mp4" aspect="968 / 1700" maxWidth={300}>The app store, right inside the mobile app: a scrollable shelf of everything your robot can do.</Video>
 </Stack>
 
 Every app in the store is a **Hugging Face Space**: a static web page hosted for
@@ -194,8 +185,8 @@ code either way, only the way you get in differs.
 
 ## A few apps to start with
 
-Conversation is built in, but most of what Reachy Mini can do comes from apps in
-the store. Here are two, each small and focused on one thing.
+Talking to it works out of the box, but most of what Reachy Mini can do comes
+from apps in the store. Here are two, each small and focused on one thing.
 
 <Stack layout="2-column" gap="large" cover ratio="746 / 1280">
 <Video src="/videos/app-telepresence.mp4"><strong>Telepresence</strong> - drive the robot from anywhere. See through its camera, hear through its mic, and steer the head with a joystick, on your desk or across the world.</Video>
@@ -204,13 +195,8 @@ the store. Here are two, each small and focused on one thing.
 
 <Note variant="success" emoji="🧩" title="All the same underneath">
 None of these needed a special feature added to the robot. They all use the same
-handful of simple commands, combined in different ways, and each one is just a
-Hugging Face Space in the store.
+handful of simple commands, combined in different ways.
 </Note>
-
-<Sidenote>
-Open any of them straight from the mobile app - tap once and it runs on your robot.
-</Sidenote>
 
 You can open these today - and you can just as easily make a new one.
 
@@ -277,6 +263,22 @@ straight back to current. It is not ready yet, but it is coming.
 
 */}
 
+## The whole galaxy
+
+This article stayed out of the plumbing on purpose, but behind everything you
+touch sits a larger ecosystem: the daemon that runs the robot, the **signalling
+server** that connects everything (the small server in the middle from earlier),
+the SDK apps are built on, the store and its catalogue, and the website. Here is
+the full map - every highlighted box links to its page.
+
+<Wide>
+<HtmlEmbed
+  frameless
+  src="stack-ecosystem-diagram.html"
+  caption="The robot, the software that runs it, and the apps and clients you use to control it. Click any highlighted box to open its repository or Space."
+/>
+</Wide>
+
 ## Wrapping up
 
 Reachy Mini is a small robot, but the software around it is what makes it feel
@@ -294,22 +296,6 @@ is built so that using it, and building for it, are things anyone can do.
 
 If you have a Reachy Mini, or just an idea for what one should do, the whole
 galaxy is already open to you.
-
-## The whole galaxy
-
-This article stayed out of the plumbing on purpose, but behind everything you
-touch sits a larger ecosystem: the daemon that runs the robot, the signaling
-central that connects everything, the SDK apps are built on, the store and its
-catalogue, and the website. Here is the full map - every highlighted box links
-to its page.
-
-<Wide>
-<HtmlEmbed
-  frameless
-  src="stack-ecosystem-diagram.html"
-  caption="The robot, the software that runs it, and the apps and clients you use to control it. Click any highlighted box to open its repository or Space."
-/>
-</Wide>
 
 ## Kudos
 
