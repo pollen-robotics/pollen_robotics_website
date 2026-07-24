@@ -12,15 +12,13 @@ import {
   Chip,
   Stack,
   CircularProgress,
-  IconButton,
-  Tooltip,
 } from "@mui/material";
 import ImageWithSpinner from "@/components/ImageWithSpinner";
+import StoreBadges from "@/components/article/StoreBadges";
+import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/storeLinks";
 import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import DesktopWindowsIcon from "@mui/icons-material/DesktopWindows";
 
 interface PlatformInfo {
@@ -38,8 +36,6 @@ const PLATFORMS: Record<string, PlatformInfo> = {
 
 const GITHUB_RELEASES_API =
   "https://api.github.com/repos/pollen-robotics/reachy-mini-desktop-app/releases/latest";
-const GITHUB_RELEASES_LIST_API =
-  "https://api.github.com/repos/pollen-robotics/reachy-mini-desktop-app/releases?per_page=10";
 
 interface GitHubAsset {
   name: string;
@@ -83,35 +79,6 @@ function formatDate(dateString?: string): string {
   return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
 
-function parseReleaseChanges(body?: string): string[] {
-  if (!body) return [];
-  const changes: string[] = [];
-  const lines = body.split("\n");
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    if (trimmed.startsWith("##")) continue;
-    if (trimmed.startsWith("**Full Changelog**")) continue;
-    if (trimmed.startsWith("**New Contributors**")) continue;
-    if (trimmed.includes("made their first contribution")) continue;
-    if (trimmed.startsWith("<!--") || trimmed.endsWith("-->")) continue;
-    if (trimmed === "See the assets to download this version and install.") continue;
-
-    if (trimmed.startsWith("*") || trimmed.startsWith("-")) {
-      let change = trimmed.replace(/^[*-]\s*/, "");
-      const byMatch = change.match(/^(.+?)\s+by\s+@\w+/i);
-      if (byMatch) change = byMatch[1].trim();
-      change = change.replace(/\s+in\s+https:\/\/[^\s]+$/i, "");
-      change = change.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-      if (change && change.length > 3 && !change.includes("first contribution")) {
-        changes.push(change);
-      }
-    }
-  }
-  return changes;
-}
-
 function AppleIcon() {
   return <Box component="img" src="/assets/apple-logo.svg" alt="Apple" sx={{ width: 32, height: 32 }} />;
 }
@@ -145,12 +112,6 @@ function parseReleasePlatforms(assets?: GitHubAsset[]): Record<string, { url: st
     if (name.endsWith(".deb")) platforms["linux-x86_64"] = { url };
   });
   return platforms;
-}
-
-function getDownloadUrlForPlatform(release: GitHubRelease, platform: string | null): string {
-  if (!release?.assets || !platform) return release?.html_url;
-  const platforms = parseReleasePlatforms(release.assets);
-  return platforms[platform]?.url || release?.html_url;
 }
 
 function PlatformCard({
@@ -258,12 +219,29 @@ function PlatformCard({
   );
 }
 
+function PhoneMockup() {
+  return (
+    <Box
+      component="img"
+      src="/assets/mobile-app-screenshot.png"
+      alt="Reachy Mini mobile app - talk to your robot and give it a custom AI personality"
+      sx={{
+        display: "block",
+        width: "auto",
+        maxWidth: "100%",
+        maxHeight: { xs: 460, md: 580 },
+        borderRadius: 5,
+        boxShadow: "0 30px 60px rgba(0,0,0,0.45)",
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
 export default function Download() {
   const [releaseData, setReleaseData] = useState<ReleaseData | null>(null);
-  const [allReleases, setAllReleases] = useState<GitHubRelease[]>([]);
   const [detectedPlatform, setDetectedPlatform] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showAllReleases, setShowAllReleases] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -274,7 +252,6 @@ export default function Download() {
     async function fetchReleases() {
       try {
         const latestResponse = await fetch(GITHUB_RELEASES_API);
-        const allResponse = await fetch(GITHUB_RELEASES_LIST_API);
 
         if (latestResponse.ok) {
           const data = (await latestResponse.json()) as GitHubRelease;
@@ -283,11 +260,6 @@ export default function Download() {
           setReleaseData({ version, pub_date: data.published_at, platforms });
         } else {
           setError("Failed to fetch release info");
-        }
-
-        if (allResponse.ok) {
-          const releases = (await allResponse.json()) as GitHubRelease[];
-          setAllReleases(releases.filter((r) => !r.draft));
         }
       } catch (err) {
         console.error("Error fetching release:", err);
@@ -393,43 +365,147 @@ export default function Download() {
       />
 
       <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-        <Box sx={{ textAlign: "center", mb: 8 }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 4 }}>
+        {/* Hero: the mobile app is the main way in. Title, one line, badges. */}
+        <Box
+          sx={{
+            position: "relative",
+            overflow: "hidden",
+            mt: { xs: 2, md: 5 },
+            mb: 8,
+            p: { xs: 3.5, sm: 6 },
+            borderRadius: 6,
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          {/* Soft glow behind the phone */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              right: { xs: "50%", md: "14%" },
+              transform: "translate(50%, -50%)",
+              width: 380,
+              height: 380,
+              background: "radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%)",
+              filter: "blur(34px)",
+              pointerEvents: "none",
+            }}
+          />
+
+          <Grid container spacing={{ xs: 4, md: 6 }} sx={{ position: "relative", alignItems: "center" }}>
+            {/* Title + badges */}
+            <Grid size={{ xs: 12, md: 7 }} sx={{ textAlign: { xs: "center", md: "left" } }}>
+              <Chip
+                label="Start here"
+                size="small"
+                sx={{
+                  mb: 2.5,
+                  backgroundColor: "rgba(139, 92, 246, 0.18)",
+                  color: "#d6ccff",
+                  fontWeight: 700,
+                  letterSpacing: 0.5,
+                }}
+              />
+
+              <Typography
+                variant="h2"
+                sx={{
+                  fontWeight: 700,
+                  mb: 2,
+                  background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 100%)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  // Room for descenders (the "y") under gradient-clipped text.
+                  lineHeight: 1.15,
+                  pb: "0.1em",
+                }}
+              >
+                Control your Reachy Mini
+              </Typography>
+
+              <Typography
+                variant="h6"
+                sx={{ color: "rgba(255,255,255,0.6)", fontWeight: 400, maxWidth: 430, mx: { xs: "auto", md: 0 }, mb: 3.5 }}
+              >
+                Set it up, talk to it, and drive it from your phone - on your desk or across
+                the world.
+              </Typography>
+
+              <Box sx={{ "& > div": { justifyContent: { xs: "center", md: "flex-start" }, mt: 0 } }}>
+                <StoreBadges appStore={APP_STORE_URL} googlePlay={GOOGLE_PLAY_URL} />
+              </Box>
+            </Grid>
+
+            {/* Phone mockup */}
+            <Grid size={{ xs: 12, md: 5 }} sx={{ display: "flex", justifyContent: "center" }}>
+              <PhoneMockup />
+            </Grid>
+          </Grid>
+        </Box>
+
+        {/* Which do I need? */}
+        <Grid container spacing={2} sx={{ mb: 8 }}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Box
               sx={{
-                width: 100,
-                height: 100,
-                borderRadius: "24px",
-                background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                height: "100%",
+                p: 3,
+                borderRadius: 3,
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <Box component="img" src="/assets/reachy-icon.svg" alt="Reachy Mini Control" sx={{ width: 64, height: 64 }} />
+              <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 700, mb: 0.5 }}>
+                🤖 Reachy Mini (wireless)
+              </Typography>
+              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                Just the <strong>mobile app</strong>. The computer is inside the robot, so
+                everything - setup, conversation, the store - happens from your phone. The
+                desktop app is optional.
+              </Typography>
             </Box>
-          </Box>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Box
+              sx={{
+                height: "100%",
+                p: 3,
+                borderRadius: 3,
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 700, mb: 0.5 }}>
+                🔧 Reachy Mini lite
+              </Typography>
+              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                The <strong>mobile app</strong> plus the <strong>desktop app</strong> below -
+                the lite has no computer inside, so your machine runs the robot&apos;s software
+                over USB.
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
 
+        {/* Desktop app - Reachy Mini Control */}
+        <Box sx={{ textAlign: "center", mb: 8 }}>
           <Typography
-            variant="h2"
-            sx={{
-              mb: 2,
-              background: "linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 100%)",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              // Room for descenders (the "y") under gradient-clipped text.
-              lineHeight: 1.2,
-              pb: "0.1em",
-            }}
+            variant="overline"
+            sx={{ color: "rgba(255,255,255,0.4)", display: "block", letterSpacing: 2, mb: 1 }}
           >
+            Desktop app
+          </Typography>
+
+          <Typography variant="h4" sx={{ color: "white", fontWeight: 700, mb: 2 }}>
             Reachy Mini Control
           </Typography>
 
-          <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.6)", fontWeight: 400, mb: 3, maxWidth: 450, mx: "auto" }}>
-            The official desktop app to control, program, and play with your Reachy Mini.
+          <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.6)", fontWeight: 400, mb: 3, maxWidth: 520, mx: "auto" }}>
+            Runs the robot&apos;s software on your computer. Required for the Lite version, and
+            handy for advanced control of any robot.
           </Typography>
 
           <Stack direction="row" spacing={2} sx={{ mb: 5, justifyContent: "center", alignItems: "center" }}>
@@ -462,11 +538,11 @@ export default function Download() {
             >
               <DesktopWindowsIcon sx={{ fontSize: 40, color: "rgba(255,255,255,0.5)", mb: 1.5 }} />
               <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 600, mb: 1 }}>
-                Desktop only
+                Download from a computer
               </Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
-                Reachy Mini Control is a desktop application available for macOS, Windows, and
-                Linux. Please visit this page from a computer to download it.
+                Reachy Mini Control is a desktop app for macOS, Windows, and Linux. Open this
+                page on a computer to download it - on your phone, grab the mobile app above.
               </Typography>
             </Box>
           ) : (
@@ -644,109 +720,6 @@ export default function Download() {
           </Button>
         </Box>
 
-        {allReleases.length > 0 && (
-          <Box
-            id="release-notes"
-            sx={{
-              background: "rgba(255, 255, 255, 0.02)",
-              border: "1px solid rgba(255, 255, 255, 0.06)",
-              borderRadius: 4,
-              p: 4,
-              scrollMarginTop: "100px",
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 3, color: "white", fontWeight: 600 }}>
-              Release Notes
-            </Typography>
-
-            <Stack spacing={2.5}>
-              {(showAllReleases ? allReleases : allReleases.slice(0, 5)).map((release) => {
-                const changes = parseReleaseChanges(release.body);
-                return (
-                  <Box
-                    key={release.id}
-                    sx={{ borderLeft: "2px solid rgba(255, 149, 0, 0.4)", pl: 3, py: 0.5 }}
-                  >
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      sx={{ mb: changes.length > 0 ? 1 : 0, alignItems: "center", flexWrap: "wrap" }}
-                    >
-                      <Typography variant="subtitle2" sx={{ color: "white", fontWeight: 600 }}>
-                        {release.tag_name}
-                      </Typography>
-                      <Chip
-                        label={formatDate(release.published_at)}
-                        size="small"
-                        sx={{ backgroundColor: "rgba(255, 255, 255, 0.05)", color: "rgba(255,255,255,0.5)", fontSize: 10, height: 20 }}
-                      />
-                      {release.prerelease && (
-                        <Chip
-                          label="Pre-release"
-                          size="small"
-                          sx={{ backgroundColor: "rgba(255, 149, 0, 0.15)", color: "#FF9500", fontSize: 10, height: 20 }}
-                        />
-                      )}
-                      <Tooltip title={`Download ${release.tag_name}`} arrow>
-                        <IconButton
-                          component="a"
-                          href={getDownloadUrlForPlatform(release, detectedPlatform)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          size="small"
-                          sx={{
-                            color: "rgba(255, 255, 255, 0.3)",
-                            padding: 0.5,
-                            ml: "auto",
-                            "&:hover": { color: "#FF9500", backgroundColor: "rgba(255, 149, 0, 0.1)" },
-                          }}
-                        >
-                          <DownloadIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
-
-                    {changes.length > 0 && (
-                      <Box component="ul" sx={{ m: 0, pl: 2.5, listStyle: "none" }}>
-                        {changes.map((change, i) => (
-                          <Box
-                            component="li"
-                            key={i}
-                            sx={{
-                              color: "rgba(255,255,255,0.6)",
-                              fontSize: 13,
-                              lineHeight: 1.6,
-                              position: "relative",
-                              "&::before": {
-                                content: '"•"',
-                                position: "absolute",
-                                left: -14,
-                                color: "rgba(255, 149, 0, 0.6)",
-                              },
-                            }}
-                          >
-                            {change}
-                          </Box>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                );
-              })}
-            </Stack>
-
-            {allReleases.length > 5 && (
-              <Button
-                variant="text"
-                onClick={() => setShowAllReleases(!showAllReleases)}
-                endIcon={showAllReleases ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                sx={{ mt: 2, color: "rgba(255,255,255,0.5)", "&:hover": { color: "white" } }}
-              >
-                {showAllReleases ? "Show less" : "Show older releases"}
-              </Button>
-            )}
-          </Box>
-        )}
       </Container>
     </Box>
   );

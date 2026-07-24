@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogPost from "@/components/BlogPost";
-import { getPost, getPostSlugs } from "@/lib/blog";
+import { getPost, getPostSlugs, getRelatedPosts } from "@/lib/blog";
 
 export const dynamicParams = false;
 
@@ -53,6 +53,8 @@ export default async function PollenBlogPostPage({
   const post = getPost("pollen", slug);
   if (!post) notFound();
 
+  const related = getRelatedPosts("pollen", slug, 2);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -87,6 +89,8 @@ export default async function PollenBlogPostPage({
         authors={post.authors}
         tags={post.tags}
         readingTime={post.readingTime}
+        related={related}
+        basePath="/blog"
       />
     </>
   );

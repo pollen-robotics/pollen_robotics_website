@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, type ReactNode } from "react";
-import { Box, Container, Typography, Chip, Stack } from "@mui/material";
+import { Box, Container, Typography, Chip, Stack, Breadcrumbs, Link as MuiLink } from "@mui/material";
 
 function useFloat(floatSpeed: number, floatRange: number, scrollFactor: number) {
   const [floatOffset, setFloatOffset] = useState(0);
@@ -151,9 +151,11 @@ export default function PageHero({
   primitives = [],
   accentColor = "#764ba2",
   icon,
+  breadcrumbs,
+  padBottom,
 }: {
   eyebrow?: string;
-  title: string;
+  title?: string;
   subtitle?: string;
   meta?: ReactNode;
   children?: ReactNode;
@@ -161,6 +163,12 @@ export default function PageHero({
   primitives?: PrimitiveConfig[];
   accentColor?: string;
   icon?: ReactNode;
+  // When provided, a breadcrumb trail replaces the eyebrow chip. The last item
+  // is treated as the current page (rendered plain, without a link).
+  breadcrumbs?: { label: string; href?: string }[];
+  // Override the dark hero's bottom padding. Useful when the page overlaps an
+  // image across the hero/body seam and needs extra dark room below the title.
+  padBottom?: number | { xs: number; md: number };
 }) {
   return (
     <Box
@@ -171,7 +179,7 @@ export default function PageHero({
         // combined chrome is ~44px taller than on the original site. Clear it
         // with extra top padding to keep the original breathing room.
         pt: { xs: 22, md: 24 },
-        pb: { xs: 10, md: 12 },
+        pb: padBottom ?? { xs: 10, md: 12 },
         position: "relative",
         overflow: "visible",
       }}
@@ -241,38 +249,83 @@ export default function PageHero({
           </Box>
         )}
 
-        {eyebrow && (
-          <Chip
-            label={eyebrow}
+        {breadcrumbs && breadcrumbs.length > 0 ? (
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            separator="›"
             sx={{
-              backgroundColor: "rgba(255,255,255,0.08)",
-              color: "rgba(255,255,255,0.9)",
               mb: 3,
-              fontWeight: 600,
-              fontSize: 12,
-              letterSpacing: "0.05em",
-              border: "1px solid rgba(255,255,255,0.1)",
+              display: "flex",
+              justifyContent: "center",
+              fontSize: 13,
+              "& .MuiBreadcrumbs-ol": { justifyContent: "center", flexWrap: "wrap" },
+              "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" },
             }}
-          />
+          >
+            {breadcrumbs.map((crumb, i) => {
+              const isLast = i === breadcrumbs.length - 1;
+              if (isLast || !crumb.href) {
+                return (
+                  <Box
+                    key={crumb.label}
+                    component="span"
+                    sx={{ color: "rgba(255,255,255,0.85)", fontWeight: isLast ? 600 : 400 }}
+                  >
+                    {crumb.label}
+                  </Box>
+                );
+              }
+              return (
+                <MuiLink
+                  key={crumb.label}
+                  href={crumb.href}
+                  underline="hover"
+                  sx={{
+                    color: "rgba(255,255,255,0.6)",
+                    "&:hover": { color: "white" },
+                  }}
+                >
+                  {crumb.label}
+                </MuiLink>
+              );
+            })}
+          </Breadcrumbs>
+        ) : (
+          eyebrow && (
+            <Chip
+              label={eyebrow}
+              sx={{
+                backgroundColor: "rgba(255,255,255,0.08)",
+                color: "rgba(255,255,255,0.9)",
+                mb: 3,
+                fontWeight: 600,
+                fontSize: 12,
+                letterSpacing: "0.05em",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            />
+          )
         )}
 
-        <Typography
-          variant="h1"
-          sx={{
-            fontSize: { xs: 36, md: 52 },
-            fontWeight: 700,
-            mb: 3,
-            background: "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            // Gradient text clips its fill to the line box; without a bit of room
-            // the tight h1 line-height slices descenders (g, y, p).
-            lineHeight: 1.2,
-            pb: "0.1em",
-          }}
-        >
-          {title}
-        </Typography>
+        {title && (
+          <Typography
+            variant="h1"
+            sx={{
+              fontSize: { xs: 36, md: 52 },
+              fontWeight: 700,
+              mb: 3,
+              background: "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              // Gradient text clips its fill to the line box; without a bit of room
+              // the tight h1 line-height slices descenders (g, y, p).
+              lineHeight: 1.2,
+              pb: "0.1em",
+            }}
+          >
+            {title}
+          </Typography>
+        )}
 
         {subtitle && (
           <Typography

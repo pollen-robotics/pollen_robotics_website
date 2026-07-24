@@ -1,0 +1,238 @@
+<div class="one-account">
+  <div class="one-account__stage">
+    <!-- Dashed wiring: the account hub in the centre links to the phone and to
+         every robot. viewBox 0-100 maps onto the stage via preserveAspectRatio
+         "none"; non-scaling strokes keep dashes even. Endpoints tuck under the
+         opaque nodes so only the links show. -->
+    <svg class="one-account__wires" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <g class="one-account__wire">
+        <line x1="50" y1="50" x2="15" y2="50" />
+        <line x1="50" y1="50" x2="83" y2="20" />
+        <line x1="50" y1="50" x2="90" y2="50" />
+        <line x1="50" y1="50" x2="83" y2="80" />
+      </g>
+    </svg>
+
+    <!-- Centre: the Hugging Face account, the pivot everything hangs off. -->
+    <div class="one-account__hub" style="--x:50%; --y:50%;">
+      <span class="one-account__hub-badge">
+        <img src="/assets/hf-logo.svg" alt="" aria-hidden="true" />
+      </span>
+      <span class="one-account__hub-label">Your Hugging&nbsp;Face account</span>
+    </div>
+
+    <!-- Left: the mobile app, signed into that account. -->
+    <div class="mobile-phone" style="--x:15%; --y:50%;">
+      <span class="mobile-phone__frame">
+        <span class="mobile-phone__island"></span>
+        <span class="mobile-phone__home"></span>
+      </span>
+      <span class="mobile-phone__label">Mobile app</span>
+    </div>
+
+    <!-- Right: your robots, wherever they happen to be. -->
+    <div class="one-account__robot" style="--x:83%; --y:20%; --d:0.2s;">
+      <img class="one-account__robot-img" src="/reachy-buste.svg" alt="" aria-hidden="true" />
+      <span class="one-account__robot-label">On your desk</span>
+    </div>
+    <div class="one-account__robot" style="--x:90%; --y:50%; --d:0.9s;">
+      <img class="one-account__robot-img" src="/reachy-buste.svg" alt="" aria-hidden="true" />
+      <span class="one-account__robot-label">At the office</span>
+    </div>
+    <div class="one-account__robot" style="--x:83%; --y:80%; --d:1.5s;">
+      <img class="one-account__robot-img" src="/reachy-buste.svg" alt="" aria-hidden="true" />
+      <span class="one-account__robot-label">Across the world</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .one-account {
+    --ink: var(--article-text, #14161a);
+    --muted: var(--article-muted, #6b7280);
+    --border: var(--article-border, rgba(0, 0, 0, 0.14));
+    --surface: var(--article-surface, #fff);
+    --brand: var(--primary-color, #2a7de1);
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    color: var(--ink);
+  }
+  .one-account * { box-sizing: border-box; }
+
+  .one-account__stage {
+    position: relative;
+    width: min(560px, 100%);
+    aspect-ratio: 1 / 0.66;
+  }
+
+  /* Dashed wiring layer, behind every node. */
+  .one-account__wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: visible;
+  }
+  .one-account__wire line {
+    stroke: color-mix(in srgb, var(--ink) 24%, transparent);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-dasharray: 1 6;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Centre hub: the Hugging Face account. */
+  .one-account__hub {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .one-account__hub-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(52px, 14vw, 66px);
+    height: clamp(52px, 14vw, 66px);
+  }
+  .one-account__hub-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  /* Label sits below the badge without shifting the badge off its centre line. */
+  .one-account__hub-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    text-align: center;
+    width: max-content;
+    max-width: 9.5em;
+    color: var(--ink);
+  }
+
+  /* Robots hanging off the account. */
+  .one-account__robot {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    animation: one-account-float 4s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+  .one-account__robot-img {
+    width: clamp(40px, 10vw, 50px);
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12));
+  }
+  .one-account__robot-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  @keyframes one-account-float {
+    0%, 100% { transform: translate(-50%, -50%) translateY(-2px); }
+    50%      { transform: translate(-50%, -50%) translateY(2px); }
+  }
+
+  /* The mobile app, drawn as a light, realistically-proportioned phone. */
+  .mobile-phone {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .mobile-phone__frame {
+    position: relative;
+    width: clamp(38px, 9vw, 46px);
+    aspect-ratio: 9 / 15.5;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--ink) 7%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--ink) 16%, var(--surface));
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.07);
+  }
+  .mobile-phone__frame::before {
+    content: "";
+    position: absolute;
+    inset: 2.5px;
+    border-radius: 8px;
+    background: linear-gradient(160deg,
+      color-mix(in srgb, var(--brand) 12%, var(--surface)) 0%,
+      var(--surface) 62%);
+  }
+  .mobile-phone__island {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 38%;
+    height: 5px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--ink) 26%, var(--surface));
+    z-index: 2;
+  }
+  .mobile-phone__home {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32%;
+    height: 2.5px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--ink) 22%, transparent);
+    z-index: 2;
+  }
+  .mobile-phone__label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* Tighter stage on narrow screens so labels never collide. */
+  @media (max-width: 460px) {
+    .one-account__stage { aspect-ratio: 1 / 0.82; }
+    .one-account__hub-label { font-size: 0.8rem; }
+    .one-account__robot-label { font-size: 0.68rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .one-account__robot { animation: none; }
+  }
+</style>

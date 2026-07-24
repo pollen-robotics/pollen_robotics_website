@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import { Box } from "@mui/material";
 import { POLLEN_MARK, HF_LOGO } from "@/lib/brand";
 import type { Zone } from "./ZoneProvider";
+
+// Run the scroll sync before paint so the bar never flashes its transparent
+// state on mount/remount (e.g. Fast Refresh while the page is scrolled).
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 // Per-zone tint. Each header blends into the top of its zone's hero so the bar
 // reads as part of the page rather than a separate chrome element.
@@ -61,7 +66,7 @@ export default function Header({
   const tint = TINTS[active];
   const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     // Same threshold as the Reachy product header so both bars react in
     // lockstep on scroll (color in overlay mode, logo shift everywhere).
     const onScroll = () => setScrolled(window.scrollY > 50);

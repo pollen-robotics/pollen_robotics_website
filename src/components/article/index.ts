@@ -11,4 +11,5 @@ export { HfUser, HfUserList } from "./HfUser";
 export { default as Accordion } from "./Accordion";
 export { default as Glossary } from "./Glossary";
 export { default as Video } from "./Video";
+export { default as StoreBadges } from "./StoreBadges";
 export { TocDesktop, TocMobile } from "./ArticleTOC";

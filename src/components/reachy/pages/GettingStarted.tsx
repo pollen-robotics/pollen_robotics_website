@@ -18,6 +18,8 @@ import {
   ToggleButtonGroup,
 } from "@mui/material";
 import ImageWithSpinner from "@/components/ImageWithSpinner";
+import StoreBadges from "@/components/article/StoreBadges";
+import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/storeLinks";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import DownloadIcon from "@mui/icons-material/Download";
 import DesktopWindowsIcon from "@mui/icons-material/DesktopWindows";
@@ -148,17 +150,9 @@ export default function GettingStarted() {
     <>
       <PageHero
         eyebrow="2-3 hours to get started"
-        title="Welcome to Reachy Mini!"
+        title="Let's bring your Reachy Mini to life"
         subtitle="Let's get your robot assembled, connected, and ready to play. No coding required — just follow these 2 simple steps."
         accentColor="#FF9500"
-        stickers={[
-          { src: "/assets/reachies/explorer.png", size: 240, top: 30, left: 120, rotation: -8 },
-          { src: "/assets/reachies/captain.png", size: 220, bottom: 0, right: 140, rotation: 10 },
-        ]}
-        primitives={[
-          { type: "ring", color: "#FF9500", size: 100, top: 20, right: 200, rotation: 15 },
-          { type: "circle", color: "#f59e0b", size: 40, bottom: 60, left: 150 },
-        ]}
       >
         <Chip
           icon={<CheckCircleIcon sx={{ color: "white !important" }} />}
@@ -174,7 +168,7 @@ export default function GettingStarted() {
 
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Box sx={{ mb: 8, textAlign: "center" }}>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="h3" color="text.primary" sx={{ fontWeight: 700, mb: 3 }}>
             Which version do you have?
           </Typography>
           <Box
@@ -210,11 +204,11 @@ export default function GettingStarted() {
                 },
               }}
             >
-              <ToggleButton value="lite">
-                <UsbIcon sx={{ fontSize: 20 }} /> Lite (USB)
-              </ToggleButton>
               <ToggleButton value="wireless">
                 <WifiIcon sx={{ fontSize: 20 }} /> Wireless
+              </ToggleButton>
+              <ToggleButton value="lite">
+                <UsbIcon sx={{ fontSize: 20 }} /> Lite (USB)
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
@@ -318,19 +312,9 @@ export default function GettingStarted() {
                             </Typography>
                           </Box>
                         ) : (
-                          <>
-                            <Button variant="contained" component={NextLink} href={`${BASE}/download`} startIcon={<DownloadIcon />}>
-                              Download Desktop App
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              href="https://huggingface.co/docs/reachy_mini/SDK/installation"
-                              target="_blank"
-                              startIcon={<OpenInNewIcon />}
-                            >
-                              Alternative: Python SDK
-                            </Button>
-                          </>
+                          <Button variant="contained" component={NextLink} href={`${BASE}/download`} startIcon={<DownloadIcon />}>
+                            Download Desktop App
+                          </Button>
                         )}
                       </StepContent>
                     </Step>
@@ -449,48 +433,19 @@ export default function GettingStarted() {
                     </Step>
                     <Step active completed={false}>
                       <StepLabel>
-                        <Typography sx={{ fontWeight: 600 }}>Download the desktop app</Typography>
+                        <Typography sx={{ fontWeight: 600 }}>Download the mobile app</Typography>
                       </StepLabel>
                       <StepContent>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          The desktop app includes everything you need to control your Wireless version.
+                          The mobile app is all you need for the Wireless version. Grab it on your
+                          phone - it sets up your robot and is how you use it day to day.
                         </Typography>
-                        <Typography variant="caption" sx={{ display: "block", mb: 2, color: "warning.main" }}>
-                          Desktop App available for macOS (Apple Silicon), Windows & Linux (beta).
+                        <Typography variant="caption" sx={{ display: "block", mb: 1, color: "text.secondary" }}>
+                          Available for iOS and Android.
                         </Typography>
-                        {isMobile ? (
-                          <Box
-                            sx={{
-                              p: 2,
-                              bgcolor: "action.hover",
-                              borderRadius: 2,
-                              border: "1px solid",
-                              borderColor: "divider",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1.5,
-                            }}
-                          >
-                            <DesktopWindowsIcon sx={{ color: "text.secondary", fontSize: 20 }} />
-                            <Typography variant="body2" color="text.secondary">
-                              The desktop app can only be downloaded from a computer.
-                            </Typography>
-                          </Box>
-                        ) : (
-                          <>
-                            <Button variant="contained" component={NextLink} href={`${BASE}/download`} startIcon={<DownloadIcon />}>
-                              Download Desktop App
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              href="https://huggingface.co/docs/reachy_mini/SDK/installation"
-                              target="_blank"
-                              startIcon={<OpenInNewIcon />}
-                            >
-                              Alternative: Python SDK
-                            </Button>
-                          </>
-                        )}
+                        <Box sx={{ "& > div": { justifyContent: "flex-start", my: 1 } }}>
+                          <StoreBadges appStore={APP_STORE_URL} googlePlay={GOOGLE_PLAY_URL} height={44} />
+                        </Box>
                       </StepContent>
                     </Step>
                     <Step active completed={false}>
@@ -499,7 +454,8 @@ export default function GettingStarted() {
                       </StepLabel>
                       <StepContent>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Use the desktop app to connect your robot to your Wi-Fi network.
+                          Open the mobile app: it finds your robot over Bluetooth, connects it to
+                          your Wi-Fi network, and you sign in with your Hugging Face account.
                         </Typography>
                       </StepContent>
                     </Step>
@@ -509,9 +465,10 @@ export default function GettingStarted() {
                       </StepLabel>
                       <StepContent>
                         <Typography variant="body2" color="text.secondary">
-                          The app will automatically detect your robot. Click &quot;Wake Up&quot; to start, then
-                          explore 30+ apps created by the community, from hand tracking to AI conversations! If you
-                          experience any issues, feel free to check our{" "}
+                          Your robot shows up in the app - tap to connect and follow the guided
+                          wake-up. From there, talk to it and explore apps from the store, from
+                          telepresence to AI conversations! If you experience any issues, feel free
+                          to check our{" "}
                           <a href="https://huggingface.co/docs/reachy_mini/troubleshooting" target="_blank" rel="noreferrer">
                             Troubleshooting & FAQ page
                           </a>{" "}
@@ -528,11 +485,11 @@ export default function GettingStarted() {
 
                 <Grid size={{ xs: 12, md: 6 }}>
                   <ImageWithSpinner
-                    src="/assets/desktop-app-screenshot--dark.png"
-                    alt="Reachy Mini Control App"
+                    src="/assets/mobile-app-screenshot.png"
+                    alt="Reachy Mini mobile app"
                     spinnerColor="primary.main"
-                    containerSx={{ width: "100%", minHeight: 200 }}
-                    sx={{ width: "100%", display: "block", borderRadius: "12px" }}
+                    containerSx={{ width: "100%", minHeight: 200, display: "flex", justifyContent: "center" }}
+                    sx={{ width: "auto", maxHeight: 560, display: "block", borderRadius: "12px" }}
                   />
                 </Grid>
               </Grid>

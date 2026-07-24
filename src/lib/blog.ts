@@ -36,12 +36,29 @@ function blogDir(zone: BlogZone): string {
   return path.join(CONTENT_DIR, zone, "blog");
 }
 
+// A post is published unless its frontmatter explicitly opts out. Two flags do
+// this, both meaning "keep it out of the live site for now":
+//   published: false  -> written but pending release (e.g. an unshipped article)
+//   draft: true       -> work in progress (legacy flag, still honored)
+// Unpublished posts are hidden everywhere - the index, the direct route, the
+// sitemap and the statically-generated params - because every slug enumeration
+// goes through getPostSlugs, which filters them out here.
+function isPublished(data: Record<string, unknown>): boolean {
+  if (data.draft === true) return false;
+  if (data.published === false) return false;
+  return true;
+}
+
 export function getPostSlugs(zone: BlogZone): string[] {
   const dir = blogDir(zone);
   if (!fs.existsSync(dir)) return [];
   return fs
     .readdirSync(dir)
     .filter((f) => f.endsWith(".mdx"))
+    .filter((f) => {
+      const raw = fs.readFileSync(path.join(dir, f), "utf8");
+      return isPublished(matter(raw).data);
+    })
     .map((f) => f.replace(/\.mdx$/, ""));
 }
 
@@ -85,8 +102,9 @@ export function getPost(zone: BlogZone, slug: string): Post | null {
   const raw = fs.readFileSync(file, "utf8");
   const { data, content } = matter(raw);
 
-  // Drafts are excluded everywhere (index and direct route) at build time.
-  if (data.draft === true) return null;
+  // Defense in depth: getPostSlugs already filters unpublished posts, but a
+  // direct getPost(slug) call must never resurrect one.
+  if (!isPublished(data)) return null;
 
   return {
     slug,
@@ -112,4 +130,26 @@ export function getAllPosts(zone: BlogZone): PostMeta[] {
     })
     .filter((p): p is PostMeta => p !== null)
     .sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+// "Related" posts, kept deliberately simple: we don't score by tags or content,
+// we just walk the date-sorted list forward from the current post and wrap
+// around at the end. This is the "next, then next again, looping" behavior -
+// enough to always surface `count` other posts as long as they exist.
+export function getRelatedPosts(
+  zone: BlogZone,
+  slug: string,
+  count = 2,
+): PostMeta[] {
+  const all = getAllPosts(zone);
+  if (all.length <= 1) return [];
+
+  const idx = all.findIndex((p) => p.slug === slug);
+  const start = idx === -1 ? 0 : idx;
+
+  const related: PostMeta[] = [];
+  for (let step = 1; step <= all.length - 1 && related.length < count; step++) {
+    related.push(all[(start + step) % all.length]);
+  }
+  return related;
 }

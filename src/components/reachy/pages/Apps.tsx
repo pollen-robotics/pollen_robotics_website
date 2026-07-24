@@ -13,22 +13,18 @@ import {
   CircularProgress,
   IconButton,
   Button,
-  Tooltip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import DownloadIcon from "@mui/icons-material/Download";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import LogoutIcon from "@mui/icons-material/Logout";
 import Fuse from "fuse.js";
 import ReachiesCarousel from "@/components/reachy/ReachiesCarousel";
 import InstallModal from "@/components/reachy/InstallModal";
 import { useApps } from "@/context/AppsContext";
-import { useAuth } from "@/context/AuthContext";
 import type { AppItem } from "@/lib/apps";
 
 type MatchMap = Record<string, [number, number][]>;
@@ -108,16 +104,10 @@ function HighlightText({
 const AppCard = memo(function AppCard({
   app,
   onInstallClick,
-  isLiked,
-  onToggleLike,
-  isLoggedIn,
   matchData,
 }: {
   app: AppItem;
   onInstallClick?: (app: AppItem) => void;
-  isLiked: boolean;
-  onToggleLike?: (spaceId?: string) => void;
-  isLoggedIn: boolean;
   matchData: MatchMap | null;
 }) {
   const isOfficial = app.isOfficial;
@@ -129,7 +119,7 @@ const AppCard = memo(function AppCard({
   const emoji = cardData.emoji || (isPythonApp ? "📦" : "");
   const spaceUrl = app.url || `https://huggingface.co/spaces/${app.id}`;
 
-  const displayedLikes = baseLikes + (isLiked ? 1 : 0);
+  const displayedLikes = baseLikes;
   const formattedDate = lastModified
     ? new Date(lastModified).toLocaleDateString("en-US", {
         month: "short",
@@ -241,47 +231,26 @@ const AppCard = memo(function AppCard({
 
         </Box>
 
-        <Tooltip
-          title={isLoggedIn ? "" : "Sign in to like this app"}
-          arrow
-          placement="top"
-          disableHoverListener={isLoggedIn}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            flexShrink: 0,
+            p: 0.5,
+          }}
         >
-          <Box
-            component="button"
-            onClick={(e: React.MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onToggleLike?.(app.id);
-            }}
+          <FavoriteBorderIcon sx={{ fontSize: 16, color: "#666666" }} />
+          <Typography
             sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              flexShrink: 0,
-              border: "none",
-              bgcolor: "transparent",
-              cursor: "pointer",
-              p: 0.5,
-              borderRadius: "6px",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#666666",
             }}
           >
-            {isLiked ? (
-              <FavoriteIcon sx={{ fontSize: 16, color: "#ec4899" }} />
-            ) : (
-              <FavoriteBorderIcon sx={{ fontSize: 16, color: "#666666" }} />
-            )}
-            <Typography
-              sx={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: isLiked ? "#ec4899" : "#666666",
-              }}
-            >
-              {displayedLikes}
-            </Typography>
-          </Box>
-        </Tooltip>
+            {displayedLikes}
+          </Typography>
+        </Box>
       </Box>
 
       <Box sx={{ px: 2.5, py: 2.5, display: "flex", flexDirection: "column", flex: 1 }}>
@@ -462,8 +431,6 @@ interface EnrichedApp {
 
 export default function AppsPage() {
   const { apps, loading, error } = useApps();
-  const { user, isLoggedIn, isOAuthAvailable, login, logout, isSpaceLiked, toggleLike } =
-    useAuth();
   const [officialOnly, setOfficialOnly] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<SearchResult[] | null>(null);
@@ -514,13 +481,6 @@ export default function AppsPage() {
     setInstallModalOpen(false);
     setSelectedApp(null);
   };
-
-  const handleToggleLike = useCallback(
-    (spaceId?: string) => {
-      toggleLike(spaceId);
-    },
-    [toggleLike]
-  );
 
   const categories = useMemo(() => {
     const categoryMap = new Map<string, number>();
@@ -770,59 +730,6 @@ export default function AppsPage() {
             }
             sx={{ m: 0 }}
           />
-
-          {isOAuthAvailable && (
-            <Box sx={{ width: "1px", height: "24px", bgcolor: "rgba(0, 0, 0, 0.1)" }} />
-          )}
-
-          {isLoggedIn ? (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar
-                src={user?.avatarUrl}
-                sx={{ width: 28, height: 28, fontSize: 12, fontWeight: 600, bgcolor: "#FF9500" }}
-              >
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </Avatar>
-              <Typography
-                sx={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "#333",
-                  maxWidth: 100,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {user?.preferredUsername || user?.name}
-              </Typography>
-              <Tooltip title="Sign out">
-                <IconButton onClick={logout} size="small" sx={{ color: "#999" }}>
-                  <LogoutIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          ) : isOAuthAvailable ? (
-            <Button
-              onClick={login}
-              variant="text"
-              size="small"
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: 13,
-                color: "#333",
-                gap: 0.75,
-                px: 1.5,
-                borderRadius: "8px",
-                whiteSpace: "nowrap",
-                "&:hover": { bgcolor: "rgba(0, 0, 0, 0.04)" },
-              }}
-            >
-              <Box component="img" src="/assets/hf-logo.svg" alt="" sx={{ height: 16 }} />
-              Sign in
-            </Button>
-          ) : null}
         </Box>
       </Container>
 
@@ -960,9 +867,6 @@ export default function AppsPage() {
                 key={app.id || index}
                 app={app}
                 onInstallClick={handleInstallClick}
-                isLiked={isSpaceLiked(app.id)}
-                onToggleLike={handleToggleLike}
-                isLoggedIn={isLoggedIn}
                 matchData={matchDataMap?.get(app.id) || null}
               />
             ))}

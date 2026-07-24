@@ -1,45 +1,38 @@
 ---
 title: "A Galaxy in your palm"
-description: "Meet the ecosystem that makes Reachy Mini easy to use and easy to build for. No robotics background needed: the mobile app, the desktop app, the app store, a few ready-made apps, and how to vibe-code your own."
+description: "Meet the ecosystem that makes Reachy Mini easy to use and easy to build for. No robotics background needed: the mobile app, the app store, a few ready-made apps, and how to vibe-code your own."
 cover: "/assets/blog/cover-software-stack.webp"
 date: "2026-07-20"
 authors:
   - name: "Thibaud Frere"
     url: "https://huggingface.co/tfrere"
   - name: "Clément Dussieux"
-    url: "https://huggingface.co/cdussieux"
+    url: "https://huggingface.co/cduss"
 tags:
   - "Product"
   - "Apps"
   - "Getting started"
 ---
 
-## Introduction
+Reachy Mini turns one. [Reachy Mini](https://huggingface.co/blog/reachy-mini)
+is a small **open-source robot**: a head that moves, two antennas, a microphone, a
+speaker and a camera. It fits on a desk. You can talk to it, it can look at you,
+and it can react. To mark its first birthday, we are releasing **the whole
+ecosystem** that has grown around it over the past year.
 
-[Reachy Mini](https://huggingface.co/blog/reachy-mini) is a small open-source
-robot: a head that moves, two antennas, a microphone, a speaker and a camera.
-It fits on a desk. You can talk to it, it can look at you, and it can react.
+The robot is only half the story. The other half is the galaxy around it: a
+**smartphone app** to set it up and talk to it, a **store** full of things it can
+do, and the **Hugging Face ecosystem** to back it all.
 
-The robot is only half the story. The other half is the galaxy around it: a smartphone
-app to set it up and talk to it, a store full of things it can do, a couple of
-small desktop tools, and the Hugging Face ecosystem to back it all. None of it
-asks you to know robotics. This article is a tour of those pieces, one by one,
-in the order you would meet them as a new owner.
-
-Here is the map. Most of what this article visits is on it:
+This article walks through those pieces one by one, in the order you meet them as
+a new owner - the robot, the app you use it with, the galaxy of apps it opens up,
+and the way to make your own:
 
 <HtmlEmbed
-  frameless
-  src="stack-ecosystem-diagram.html"
-  title="The Reachy Mini ecosystem"
-  caption="The robot, the software that runs it, and the apps and clients you use to control it. Hover a highlighted box to open its page."
+  src="stack-visible-bricks.html"
+  title="The galaxy around your robot"
+  caption="Reachy Mini sits at the centre. The app you use it with, a whole galaxy of ready-made apps, and the option to vibe-code your own all orbit around it."
 />
-
-<Sidenote>
-How the robot actually talks to your phone and to apps across the internet -
-the plumbing under this map - has its own, more technical companion article.
-This one stays out of the wiring.
-</Sidenote>
 
 ## Using your robot
 
@@ -51,33 +44,89 @@ on your Wi-Fi - and once the robot is online, you sign in with your Hugging
 Face account, your robot shows up in a list, and you tap to connect.
 Everything you do day to day starts here.
 
-<Note variant="info" emoji="🗣️" title="Conversation is built in">
-The headline feature is talking to the robot. The conversation actually runs on
-the robot itself; the app is simply how you start it and follow along. Start it
-and you are in a real back-and-forth voice conversation: you speak, the robot
-listens, thinks, and answers out loud while its head and antennas move along. It
-can also glance through its camera, play an emotion, and remember things you
-told it earlier.
+<StoreBadges card appStore="https://apps.apple.com/app/id6766823749" googlePlay="https://play.google.com/store/apps/details?id=com.pollenrobotics.reachymini" />
+
+### One account, all your robots
+
+For your robot to show up in that list, it has to be signed into the **same
+Hugging Face account** as the app. That shared account is how the app knows
+which robots are yours - on your desk, at the office, or on the other side of
+the world.
+
+<HtmlEmbed
+  src="stack-one-account.html"
+  title="One account ties it all together"
+  caption="Your Hugging Face account is the pivot: the app and every one of your robots sign into it, so any robot on that account shows up as yours - wherever it happens to be."
+/>
+
+Behind the scenes, it all goes through one small server in the middle. When your
+robot comes online, it announces itself there as one of yours; the app, signed
+into the same account, just asks that server which robots are yours - and that
+is the list you tap from.
+
+Tapping one opens a direct connection between the app and the robot: the server
+introduces the two, then steps aside while the video, the sound and the movement
+flow straight between them. That works the same whether the robot is on your
+Wi-Fi or across an ocean, so near and far feel identical - same app, same tap.
+
+<Note variant="success" emoji="🌍" title="One app, local or remote">
+The app never has to know where the robot is. Drive one on your desk over local
+Wi-Fi, or one in another country over the internet, with the exact same app and
+the exact same tap.
 </Note>
 
-<Video src="/videos/conversation.mp4" aspect="1004 / 1730" maxWidth={320}>Talking to Reachy Mini from the mobile app: hold a real voice conversation, and give it any personality you like from a single line.</Video>
+We are also working on a fully-local mode that finds and connects to a robot on
+your own network, with no account and no central server at all.
 
-<Stack layout="3-column" gap="medium">
-  <Note variant="neutral" emoji="✍️" title="Describe a vibe">
-  One sentence is enough. Out comes a name, a voice and a whole character.
-  </Note>
-  <Note variant="neutral" emoji="🎲" title="Or roll the dice">
-  No idea? Hit surprise-me and the app invents an original character for you.
-  </Note>
-  <Note variant="neutral" emoji="💾" title="Keep your cast">
-  A few personas ship built in; the ones you make are saved and swappable.
-  </Note>
+### First contact, over Bluetooth
+
+The very first thing to do with a brand-new robot is get it onto your Wi-Fi.
+We first shipped this as a desktop app, and we learned a lot from it - but a
+desktop app is one more thing to install, and its connection was never quite
+dependable enough. So we moved the whole first-contact flow onto **Bluetooth**,
+straight from the phone: the app discovers the robot over Bluetooth, you pick
+your network and hand over the password, and the robot joins your Wi-Fi. No
+cable, no desktop install - and it is far more reliable.
+
+<Stack layout="2-column" gap="large">
+<Video src="/videos/bluetooth-setup.mp4" aspect="1002 / 1720" maxWidth={300}>First contact over Bluetooth: the app finds the robot, you choose your Wi-Fi network, and the robot comes online - no cable, no desktop app.</Video>
 </Stack>
 
-<Sidenote>
-Personalities are generated with your own Hugging Face account, so there is no
-shared key behind the scenes and nothing extra to set up. Sign in and create.
-</Sidenote>
+### The first wake-up
+
+The very first time you connect, the app does not drop you straight into a
+conversation. It plays a short guided wake-up: the robot starts "still asleep"
+and you bring it to life together, one step at a time. Along the way it quietly
+checks that every part works - it hears you through the microphone, moves its
+head and antennas, looks at you through the camera, and speaks through the
+speaker - and you give it a name. It ends with a little greeting, and from then
+on you are straight into talking to it.
+
+<Note variant="neutral" emoji="✨" title="Once, and only once">
+The wake-up is a one-time welcome, remembered per robot. After that, connecting
+takes you right where you left off - no wizard, no setup, just your robot.
+</Note>
+
+<Stack layout="2-column" gap="large">
+<Video src="/videos/wake-up.mp4" aspect="1002 / 1720" maxWidth={300}>The first wake-up: the app walks you through waking the robot and meeting it - checking its microphone, movement, camera and speaker, then naming it.</Video>
+</Stack>
+
+### Conversation is built in
+
+The headline feature is talking to the robot. For now the conversation runs in
+the app, which drives the robot as you talk. Start it and you are in a real
+back-and-forth voice conversation: you speak, the robot listens, thinks, and
+answers out loud while its head and antennas move along. It can also glance
+through its camera, play an emotion, and remember things you told it earlier.
+
+<Stack layout="2-column" gap="large">
+<Video src="/videos/conversation.mp4" aspect="1004 / 1730" maxWidth={320}>Talking to Reachy Mini from the mobile app: hold a real voice conversation, and give it any personality you like from a single line.</Video>
+</Stack>
+
+Giving it a personality is just as easy: describe a vibe in one sentence and out
+comes a name, a voice and a whole character - or, if nothing comes to mind, hit
+surprise-me and the app invents an original one for you. A few personas ship
+built in, and the ones you make are saved and swappable.
 
 ### Drive it, and add to it
 
@@ -86,57 +135,36 @@ with an on-screen joystick, like a small remote-controlled companion. And it is
 your door to the app store: browse new apps and launch them straight onto the
 robot, no install (more on that later).
 
-The whole app works whether the robot is right in front of you or in another
-room, another building, or another country. If you can reach the internet, you
-can reach your robot.
-
 ### Lite or full: two robots, one ecosystem
 
-There are two versions of the hardware, aimed at two kinds of people.
+There are two versions of the hardware, aimed at two kinds of people - but they
+share the exact same ecosystem.
 
-<Stack layout="2-column" gap="large">
-  <Note variant="neutral" emoji="🤖" title="Reachy Mini (wireless)">
-  The polished, end-user experience. Its computer is inside, it lives on your
-  Wi-Fi, and everything in this article - setup, conversation, the store -
-  happens from the phone in your hand.
-  </Note>
-  <Note variant="neutral" emoji="🔧" title="Reachy Mini lite">
-  The version for makers and tinkerers. Same head, antennas, camera and
-  expressiveness, but no computer inside: it plugs into yours over USB, and
-  your machine does the thinking.
-  </Note>
-</Stack>
+<HtmlEmbed src="stack-two-versions.html" />
 
-The lite needs one extra piece: the **desktop app**, which runs the robot's
-software on your computer. With it, a lite robot joins the exact same
-ecosystem as a wireless one - the same mobile app, the same store, the same
-apps.
+The only extra piece the lite needs is the **desktop app**, which runs the
+robot's software on your computer. All you have to do is connect to the robot in
+the desktop app and sign in with your Hugging Face account. From then on, as
+long as the robot stays connected to the desktop app, it shows up in the mobile
+app and joins the exact same ecosystem as a wireless one.
 
-### The flasher: a reset button for the wireless robot
-
-Sometimes software gets into a bad state. When every other recovery has
-failed, a small desktop app - the **flasher** - puts the wireless Reachy Mini
-back to factory fresh. Plug the robot in over USB, click one button, and it
-reinstalls the robot's whole operating system, downloading the latest version
-for you.
-
-<Sidenote>
-The flasher is designed for the full version: it is the recovery tool you reach for
-when a robot will not boot, not something you need in normal use.
-</Sidenote>
-
-<Video src="/videos/flasher-demo.mp4" aspect="1000 / 944" maxWidth={560}>The flasher: plug the robot in over USB, click once, and it reinstalls a fresh operating system, downloading the latest version for you.</Video>
-
-## The app store and the host
+## The app store
 
 ### One store, open to everyone
 
 Reachy Mini has an app store, and you reach it right from the mobile app.
 Browse the list, tap an app, and it runs on your robot. There is nothing to
-install and nothing to update.
+install and nothing to update. You can also [browse the apps](/reachy-mini/apps)
+right here on the site to see what is already out there.
 
-Every app in the store is a web page that anyone can publish. Post yours and it
-can show up in the store like any other. Publishing is open to everyone.
+<Stack layout="2-column" gap="large">
+<Video src="/videos/store.mp4" aspect="968 / 1700" maxWidth={300}>The app store, right inside the mobile app: browse the list, tap an app, and it runs on your robot right away.</Video>
+</Stack>
+
+Every app in the store is a **Hugging Face Space**: a static web page hosted for
+free on Hugging Face. Publishing is open to everyone - push a Space, tag it with
+`reachy_mini_js_app`, and it shows up in the store like any other, right next to
+the official ones.
 
 <Note variant="info" emoji="🛡️" title="Open, but not a free-for-all">
 A featured list highlights trusted apps, a blocklist removes bad ones, and an
@@ -144,161 +172,110 @@ automatic filter screens content before it reaches users. Publishing stays
 easy; the store stays safe to browse.
 </Note>
 
-### Two ways to run any app
+### In the app, or in any browser
 
-The same app runs in two places, with no change and no second version:
+Because every app is just a web page, the same app can run in two places without
+a single change to its code. Most of the time it runs **embedded** inside a
+host - the mobile app, or the vibe coder's live preview. The host signs you in,
+picks your robot and opens the connection once, then hands the running app a
+robot that is already awake; the app itself never deals with login or setup.
 
-<Stack layout="2-column" gap="large">
-  <Note variant="neutral" emoji="📱" title="Inside the mobile app">
-  Open an app from the store and it runs right there in the app, handed your
-  connected robot automatically. Close it and you are back to the conversation.
-  </Note>
-  <Note variant="neutral" emoji="🌐" title="From the host, in any browser">
-  No mobile app at hand? The <strong>host</strong> is a web page that turns
-  any browser into a full Reachy Mini client. Open an app link and it runs there.
-  </Note>
-</Stack>
-
-Either way you sign in and pick your robot once, and from then on every app you
-open is already connected. No separate login per app, no reconnecting. An app
-author ships only the app itself; the mobile app and the host handle the rest.
+The same app can also run **standalone in any browser**. A small host shell
+turns a plain browser tab into a full Reachy Mini client: open a link, sign in
+once, pick your robot, and the app drives it - no mobile app in the loop. Same
+code either way, only the way you get in differs.
 
 <Wide>
-<Stack layout="2-column" gap="large">
-<Video src="/videos/app-in-app.mp4" aspect="16 / 10"><strong>In the mobile app</strong> - open an app from the store and it runs right there, robot already connected.</Video>
-<Video src="/videos/app-host.mp4" aspect="16 / 10"><strong>In the host</strong> - the same app in a plain browser, after a single sign-in.</Video>
+<Stack matchHeight rowHeight="320" gap="large">
+<Video src="/videos/app-telepresence.mp4" aspect="746 / 1280"><strong>In the app</strong> - a store app running embedded in the mobile app, already signed in and connected to your robot.</Video>
+<Video src="/videos/app-shell-mode.mp4" aspect="1462 / 1080"><strong>In a browser</strong> - the same kind of app running standalone in a plain browser, with its own sign-in and robot picker.</Video>
 </Stack>
 </Wide>
-
-<Sidenote>
-Because the host is just a web page, sharing an app is like sharing any link.
-Whoever opens it signs in with their own account and uses their own robot.
-</Sidenote>
-
-### Near or far, the same app
-
-Whether your robot is on the same Wi-Fi as you or on the other side of the
-world, the app connects the same way and behaves the same way. The connection
-(WebRTC, if you want the name) finds the best path on its own and carries the
-video, the sound and the movement together.
-
-<Note variant="success" emoji="🌍" title="One app, local or remote">
-The app never has to know where the robot is. Drive one on your desk over local
-Wi-Fi, or one in another country over the internet, with the exact same app and
-the exact same tap.
-</Note>
 
 ## A few apps to start with
 
 Conversation is built in, but most of what Reachy Mini can do comes from apps in
 the store. Here are two, each small and focused on one thing.
 
-<Stack layout="2-column" gap="large">
-<Video src="/videos/app-telepresence.mp4" aspect="1002 / 1720" maxWidth={300}><strong>Telepresence</strong> - drive the robot from anywhere. See through its camera, hear through its mic, and steer the head with a joystick, on your desk or across the world.</Video>
-<Video src="/videos/app-emotions.mp4" aspect="972 / 1706" maxWidth={300}><strong>Emotions</strong> - a wheel of expressive moves. Tap one and the whole robot performs it: head, antennas and a matching sound together.</Video>
+<Stack layout="2-column" gap="large" cover ratio="746 / 1280">
+<Video src="/videos/app-telepresence.mp4"><strong>Telepresence</strong> - drive the robot from anywhere. See through its camera, hear through its mic, and steer the head with a joystick, on your desk or across the world.</Video>
+<Video src="/videos/app-emotions.mp4"><strong>Emotions</strong> - a wheel of expressive moves. Tap one and the whole robot performs it: head, antennas and a matching sound together.</Video>
 </Stack>
 
 <Note variant="success" emoji="🧩" title="All the same underneath">
 None of these needed a special feature added to the robot. They all use the same
 handful of simple commands, combined in different ways, and each one is just a
-web page in the store.
+Hugging Face Space in the store.
 </Note>
 
 <Sidenote>
-Open any of them from the mobile app or the host, and remember: local or remote,
-they behave exactly the same.
+Open any of them straight from the mobile app - tap once and it runs on your robot.
 </Sidenote>
 
 You can open these today - and you can just as easily make a new one.
 
 ## Make your own, in plain words
 
-You should be able to describe what you want and watch it happen on your
-robot. The tool for that is an **AI agent**, and there are three ways to put
-one to work.
-
-### Describe an app, watch an agent build it
-
-The [**Reachy Mini vibe coder**](https://huggingface.co/spaces/tfrere/reachy-mini-vibe-coding-apps)
-is a coding agent that writes small robot apps with you. The word *agent*
-matters: it does not just paste a snippet. It plans the app, writes the actual
-files, runs them on your robot, watches what breaks, and fixes it, looping the
-way a developer would until the thing works.
-
-<Note variant="info" emoji="🤖" title="It knows about the robot">
-The agent is briefed on how Reachy Mini works: how the head moves, what is
-safe, which SDK commands to call. The app it produces respects the hardware,
-and you never have to explain robotics to it.
-</Note>
-
-You stay in the loop the whole time: you describe, it builds, you watch it run
-live on your real robot, and you ask for changes in plain words.
-
-<Stack layout="auto" gap="medium">
-  <Note variant="neutral" emoji="💬" title="Describe">
-  Ask for what you want, in a sentence.
-  </Note>
-  <Note variant="neutral" emoji="🔁" title="Let it work">
-  The agent writes, runs and fixes the code on its own.
-  </Note>
-  <Note variant="neutral" emoji="👀" title="Preview">
-  It runs live on your actual robot.
-  </Note>
-  <Note variant="neutral" emoji="🚀" title="Publish">
-  One click shares it with everyone.
-  </Note>
-</Stack>
+Conversation and the store apps are only the start. When you want something that
+does not exist yet, you describe it and an **AI agent** builds it - the
+[Reachy Mini vibe coder](https://huggingface.co/spaces/tfrere/reachy-mini-vibe-coding-apps)
+writes the app and runs it live on your robot. Or, if you would rather write the
+code yourself, you take the wheel and build it locally.
+Either way you end up with an ordinary web app that runs on your real robot and
+lives in the same store as everyone else's.
 
 <Wide>
 <Video src="/videos/vibe-coder.mp4" aspect="1460 / 1080">The vibe coder: describe an app, watch it get written and run live on the real robot, then publish it to the store.</Video>
 </Wide>
 
-### What the agent actually produces
+<Note variant="info" emoji="🛠️" title="Read next: build your own app">
+This is a whole topic of its own, so it has its own guide in the docs:
+[Building & Publishing Apps](https://huggingface.co/docs/reachy_mini/SDK/apps)
+walks through the vibe coder, what an app actually is, building it locally,
+bringing your own agent, and the two places your app runs.
+</Note>
 
-A Reachy Mini app is a web page. Not a firmware image, not a robotics
-project - a web page that drives the robot through a small JavaScript library:
+{/*
 
-```js
-const robot = new ReachyMini();
-await robot.autoConnect(); // sign in, find the robot, connect, wake it up
-await robot.moveHead({ pitch: 0.1, yaw: -0.2 }); // tilt and turn the head
-await robot.playMove("happy");                   // play a ready-made emotion
-```
+## What's next
 
-That is all the agent is writing for you - and if you can build a web page,
-you can also write one by hand whenever you want more control than a prompt
-gives you. An app can even lean on the robot's built-in conversation instead
-of reinventing it: start it, make the robot speak, or hand it a whole
-personality, each one command away.
+Conversation works today, but it runs in the app, a little apart from
+everything else. The next step is to move it right into the robot's core, so
+that talking becomes just another building block any app can reach for - as
+easy to drop in as playing an emotion.
 
-<Sidenote>
-What the SDK does under these calls - the connection, the sessions, the
-safety machinery that always returns the robot to a safe pose - is the
-subject of the technical companion article.
-</Sidenote>
+<Stack layout="2-column" gap="large">
+  <Note variant="neutral" emoji="🧩" title="Conversation as a building block">
+  Vibe-code an app that listens, speaks and reasons with a single call - no
+  separate service to wire up. Anyone building an app gets the robot's full
+  conversation for free, the same way they already get its moves and emotions.
+  </Note>
+  <Note variant="neutral" emoji="👆" title="Start it with a gesture">
+  Quick physical triggers to begin a conversation without opening anything - a
+  tap on the forehead and the robot is listening. The shortest possible path
+  from "I want to talk to it" to actually talking.
+  </Note>
+</Stack>
 
-### Or bring your own agent
+Put together, these point at a bigger idea: a Reachy you can use with no screen
+at all. Setup still happens once in the app - finding the robot, putting it on
+Wi-Fi, signing in - but from then on you should not need a phone or a browser in
+your hand to interact with it. No app to open, no UI to navigate: just a tap on
+its forehead and your voice. The robot becomes something you talk to, not
+something you operate.
 
-Already using a coding agent like Claude Code, Codex or Copilot? Point it at
-the project's [AGENTS.md guide](https://github.com/pollen-robotics/reachy_mini/blob/main/AGENTS.md)
-and describe your idea. The guide hands your agent the same robot knowledge
-and the same patterns the vibe coder relies on. Same destination, your own
-toolbox.
+### A flasher to recover a robot
 
-<Sidenote>
-The hosted vibe coder is the fastest path; your own agent gives you the most
-control. Both produce ordinary apps that live in the same store.
-</Sidenote>
+We are also working on a **flasher**: a small desktop tool for the exception
+where a robot has sat unused for so long that the normal over-the-internet
+updates no longer catch it up, or where its software got into a bad state. Plug
+the robot in over USB, click one button, and it reinstalls the whole operating
+system, downloading the latest version and bringing a long-neglected robot
+straight back to current. It is not ready yet, but it is coming.
 
-### Or just change its personality
+<Video src="/videos/flasher-demo.mp4" aspect="1000 / 944" maxWidth={560}>A preview of the flasher: plug the robot in over USB, click once, and it reinstalls a fresh operating system, downloading the latest version for you.</Video>
 
-You do not even need to make an app. The persona creator from earlier is the
-same idea aimed at the robot's character instead of its code: one sentence in,
-a whole personality out, no code at all.
-
-Describe it in words, and something appears that drives the robot. Whether it
-is a full app or a new personality, the path from idea to a moving, talking
-robot is short.
+*/}
 
 ## Wrapping up
 
@@ -315,15 +292,24 @@ An open robot is only as open as the software around it. Reachy Mini's software
 is built so that using it, and building for it, are things anyone can do.
 </Note>
 
-If you have a Reachy Mini, or just an idea for what one should do, the shortest
-path from here is to describe it and watch it move.
+If you have a Reachy Mini, or just an idea for what one should do, the whole
+galaxy is already open to you.
 
-<Note variant="neutral" emoji="🔌" title="Want the wiring?">
-This article stayed out of the plumbing on purpose. If you want to know how the
-robot actually connects to your phone and to apps across the internet, there is
-a companion, more technical article about the single connection underneath it
-all.
-</Note>
+## The whole galaxy
+
+This article stayed out of the plumbing on purpose, but behind everything you
+touch sits a larger ecosystem: the daemon that runs the robot, the signaling
+central that connects everything, the SDK apps are built on, the store and its
+catalogue, and the website. Here is the full map - every highlighted box links
+to its page.
+
+<Wide>
+<HtmlEmbed
+  frameless
+  src="stack-ecosystem-diagram.html"
+  caption="The robot, the software that runs it, and the apps and clients you use to control it. Click any highlighted box to open its repository or Space."
+/>
+</Wide>
 
 ## Kudos
 
@@ -334,7 +320,20 @@ behind the robot, its software and its apps:
   <HfUser username="PierreRouanet" name="Pierre Rouanet" />
   <HfUser username="RemiFabre" name="Rémi Fabre" />
   <HfUser username="FabienDanieau" name="Fabien Danieau" />
+  <HfUser username="matthieu-lapeyre" name="Matthieu Lapeyre" />
+  <HfUser username="apirrone" name="Antoine Pirrone" />
+  <HfUser username="askuric" name="Antun Skuric" />
+  <HfUser username="CarolinePascal" name="Caroline Pascal" />
+  <HfUser username="glannuzel" name="Gaëlle Lannuzel" />
+  <HfUser username="acrampette" name="Augustin Crampette" />
+  <HfUser username="simheo" name="Simon Le Goff" />
   <HfUser username="andito" name="Andres Marafioti" />
   <HfUser username="alozowski" name="Alina Lozovskaya" />
   <HfUser username="A-Mahla" name="Amir Mahla" />
+  <HfUser username="thomwolf" name="Thomas Wolf" />
+  <HfUser username="clem" name="Clément Delangue" />
+  <HfUser username="tfrere" name="Thibaud Frere" />
+  <HfUser username="cduss" name="Clément Dussieux" />
+  <HfUser username="cdeplanne" name="Coralie Deplanne" />
+  <HfUser username="Anne-Charlotte" name="Anne-Charlotte Passanisi" />
 </HfUserList>

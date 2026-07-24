@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -25,6 +25,13 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { REACHY_BLOG_ENABLED } from "@/lib/flags";
 
 const BASE = "/reachy-mini";
+
+// Sync the `scrolled` state *before* the browser paints so the header never
+// flashes its transparent state on mount/remount (e.g. Fast Refresh while the
+// page is scrolled). Falls back to useEffect on the server to avoid the SSR
+// "useLayoutEffect does nothing on the server" warning.
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 interface NavItem {
   label: string;
@@ -53,7 +60,7 @@ export default function ReachyHeader({ transparent = false }: { transparent?: bo
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const pathname = usePathname();
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     handleScroll();
     window.addEventListener("scroll", handleScroll);

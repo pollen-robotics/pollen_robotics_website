@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogPost from "@/components/BlogPost";
 import PageHero from "@/components/reachy/PageHero";
-import ArticleHeroMeta from "@/components/reachy/ArticleHeroMeta";
-import { getPost, getPostSlugs } from "@/lib/blog";
+import { getPost, getPostSlugs, getRelatedPosts } from "@/lib/blog";
 import { REACHY_BLOG_ENABLED } from "@/lib/flags";
 
 export const dynamicParams = false;
@@ -60,6 +59,8 @@ export default async function ReachyBlogPostPage({
   const post = getPost("reachy-mini", slug);
   if (!post) notFound();
 
+  const related = getRelatedPosts("reachy-mini", slug, 2);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -91,19 +92,16 @@ export default async function ReachyBlogPostPage({
         authors={post.authors}
         tags={post.tags}
         readingTime={post.readingTime}
+        related={related}
+        basePath="/reachy-mini/blog"
         hero={
           <PageHero
-            eyebrow="Blog"
-            title={post.title}
-            subtitle={post.description}
-            meta={
-              <ArticleHeroMeta
-                authors={post.authors}
-                date={post.date}
-                readingTime={post.readingTime}
-                tags={post.tags}
-              />
-            }
+            breadcrumbs={[
+              { label: "Reachy Mini", href: "/reachy-mini" },
+              { label: "Blog", href: "/reachy-mini/blog" },
+              { label: post.title },
+            ]}
+            padBottom={{ xs: 22, md: 36 }}
           />
         }
       />

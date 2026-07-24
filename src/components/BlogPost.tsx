@@ -27,10 +27,12 @@ import {
   Accordion,
   Glossary,
   Video,
+  StoreBadges,
   TocDesktop,
   TocMobile,
 } from "@/components/article";
-import type { Author } from "@/lib/blog";
+import RelatedPosts from "@/components/reachy/RelatedPosts";
+import type { Author, PostMeta } from "@/lib/blog";
 
 function formatDate(date: string): string {
   if (!date) return "";
@@ -69,6 +71,7 @@ const components = {
   Accordion,
   Glossary,
   Video,
+  StoreBadges,
 
   // Markdown elements. Heading sizes/weights mirror the research-article-template
   // (_base.css). rehype-autolink wraps heading text in an <a>; keep it inherit so
@@ -297,6 +300,8 @@ export default async function BlogPost({
   tags = [],
   readingTime = 0,
   hero,
+  related = [],
+  basePath,
 }: {
   title: string;
   date: string;
@@ -306,6 +311,8 @@ export default async function BlogPost({
   tags?: string[];
   readingTime?: number;
   hero?: React.ReactNode;
+  related?: PostMeta[];
+  basePath?: string;
 }) {
   const { content } = await compileMDX({
     source,
@@ -317,6 +324,55 @@ export default async function BlogPost({
     <>
       {hero}
       <ArticleThemeScope>
+        {/* Banner bridging the dark hero and the light body: the cover image is
+            pulled up so it sits mostly inside the dark subheader, then the title
+            and meta follow it, centered on the light background below. */}
+        {hero && (
+          <Box
+            sx={{
+              position: "relative",
+              zIndex: 3,
+              mx: "auto",
+              maxWidth: 840,
+              px: { xs: 2.5, sm: 3 },
+              mt: cover ? { xs: -20, md: -34 } : { xs: 4, md: 6 },
+              textAlign: "center",
+            }}
+          >
+            {cover && (
+              <Box
+                component="img"
+                src={cover}
+                alt=""
+                sx={{
+                  display: "block",
+                  width: "100%",
+                  height: "auto",
+                  aspectRatio: "16 / 9",
+                  objectFit: "cover",
+                  borderRadius: "14px",
+                  boxShadow: "0 20px 48px rgba(0,0,0,0.28)",
+                }}
+              />
+            )}
+            <Typography
+              component="h1"
+              sx={{
+                color: "var(--article-text)",
+                fontWeight: 700,
+                fontSize: { xs: 30, md: 44 },
+                lineHeight: 1.2,
+                mt: cover ? { xs: 3, md: 4 } : 0,
+                mb: 2,
+              }}
+            >
+              {title}
+            </Typography>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <AuthorLine authors={authors} date={date} readingTime={readingTime} />
+            </Box>
+          </Box>
+        )}
         <Box
           sx={{
             display: "grid",
@@ -371,6 +427,9 @@ export default async function BlogPost({
               </Box>
             )}
             {content}
+            {basePath && related.length > 0 && (
+              <RelatedPosts posts={related} basePath={basePath} />
+            )}
           </Box>
 
           {/* Right gutter: reserved for floating sidenotes (desktop only). */}

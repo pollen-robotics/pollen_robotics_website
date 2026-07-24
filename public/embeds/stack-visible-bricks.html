@@ -1,0 +1,284 @@
+<div class="pieces-orbit">
+  <div class="pieces-orbit__stage">
+    <!-- Discreet dashed wiring: robot -> phone, then phone -> every app,
+         so the phone reads as the hub. preserveAspectRatio="none" maps the
+         0-100 viewBox onto the stage box; non-scaling strokes keep dashes even.
+         Endpoints sit under the opaque nodes, so only the links show. -->
+    <svg class="pieces-orbit__wires" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <g class="pieces-orbit__wire">
+        <line x1="50" y1="24" x2="50" y2="47" />
+        <line x1="50" y1="47" x2="7" y2="47" />
+        <line x1="50" y1="47" x2="12.76" y2="67" />
+        <line x1="50" y1="47" x2="28.5" y2="81.64" />
+        <line x1="50" y1="47" x2="50" y2="87" />
+        <line x1="50" y1="47" x2="71.5" y2="81.64" />
+        <line x1="50" y1="47" x2="87.24" y2="67" />
+        <line x1="50" y1="47" x2="93" y2="47" />
+      </g>
+      <!-- Caption on an inner concentric arc (centre 50,47), painted last so it
+           sits above the wires, with a white halo to stay legible over them. -->
+      <path id="pieces-eco-arc" d="M 18 43 A 32 28 0 0 0 82 43" fill="none" />
+      <text class="pieces-orbit__eco-text">
+        <textPath href="#pieces-eco-arc" startOffset="50%" text-anchor="middle">Reachy app ecosystem</textPath>
+      </text>
+    </svg>
+
+    <!-- Top: the robot. -->
+    <div class="pieces-orbit__robot-wrap" style="--x:50%; --y:15%;">
+      <img class="pieces-orbit__robot" src="/reachy-buste.svg" alt="" aria-hidden="true" />
+      <span class="pieces-orbit__center-label">Reachy Mini Wireless</span>
+    </div>
+
+    <!-- Below it, with room to breathe: the mobile app, drawn as a real phone. -->
+    <div class="mobile-phone" style="--x:50%; --y:47%;">
+      <span class="mobile-phone__frame">
+        <span class="mobile-phone__island"></span>
+        <span class="mobile-phone__home"></span>
+      </span>
+      <span class="mobile-phone__label">Mobile</span>
+    </div>
+
+    <!-- A full half-circle of apps, evenly spaced on the dashed arc, with
+         "make your own" sitting right at the bottom-centre of the arc.
+         --d staggers the twinkle. -->
+    <span class="app-tile app-tile--img" style="--x:7%; --y:47%; --d:0.9s;">
+      <img src="/embeds/app-icons/telepresence.svg" alt="" loading="lazy" />
+    </span>
+    <span class="app-tile app-tile--img" style="--x:12.76%; --y:67%; --d:0.3s;">
+      <img src="/embeds/app-icons/emotions.svg" alt="" loading="lazy" />
+    </span>
+    <span class="app-tile app-tile--img app-tile--illus" style="--x:28.5%; --y:81.64%; --d:0.7s;">
+      <img src="/assets/reachy-detective.svg" alt="" loading="lazy" />
+    </span>
+
+    <!-- Middle of the arc: make your own. -->
+    <span class="app-tile app-tile--make" style="--x:50%; --y:87%;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 6v12M6 12h12" stroke-linecap="round"/></svg>
+      <span class="app-tile__label app-tile__label--below">Make your own</span>
+    </span>
+
+    <span class="app-tile app-tile--img app-tile--illus" style="--x:71.5%; --y:81.64%; --d:1.1s;">
+      <img src="/assets/reachy-chess-coach.svg" alt="" loading="lazy" />
+    </span>
+    <span class="app-tile app-tile--img" style="--x:87.24%; --y:67%; --d:1.2s;">
+      <img src="/embeds/app-icons/marionette.svg" alt="" loading="lazy" />
+    </span>
+    <span class="app-tile app-tile--img" style="--x:93%; --y:47%; --d:1.8s;">
+      <img src="/embeds/app-icons/conversation.svg" alt="" loading="lazy" />
+    </span>
+  </div>
+</div>
+
+<style>
+  .pieces-orbit {
+    --ink: var(--article-text, #14161a);
+    --muted: var(--article-muted, #6b7280);
+    --border: var(--article-border, rgba(0, 0, 0, 0.14));
+    --surface: var(--article-surface, #fff);
+    --brand: var(--primary-color, #2a7de1);
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    color: var(--ink);
+  }
+  .pieces-orbit * { box-sizing: border-box; }
+
+  .pieces-orbit__stage {
+    position: relative;
+    width: min(500px, 100%);
+    aspect-ratio: 1 / 1.05;
+  }
+
+  /* Dashed wiring layer, behind every node. */
+  .pieces-orbit__wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: visible;
+  }
+  .pieces-orbit__wire line {
+    stroke: color-mix(in srgb, var(--ink) 24%, transparent);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-dasharray: 1 6;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Top: the robot. */
+  .pieces-orbit__robot-wrap {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .pieces-orbit__robot {
+    width: clamp(44px, 11vw, 54px);
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.12));
+  }
+  .pieces-orbit__center-label {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--ink);
+  }
+
+  /* Tiles. */
+  .app-tile {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    width: clamp(46px, 12vw, 58px);
+    height: clamp(46px, 12vw, 58px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    z-index: 2;
+    animation: pieces-twinkle 3.6s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+  .app-tile svg { width: 20px; height: 20px; }
+
+  /* Tiles that show a real store app icon: the icon fills the tile. */
+  .app-tile--img {
+    padding: 0;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .app-tile--img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 9px;
+    box-sizing: border-box;
+    display: block;
+  }
+  /* Character illustrations from the project: show the whole figure. */
+  .app-tile--illus img {
+    padding: 5px;
+  }
+
+  @keyframes pieces-twinkle {
+    0%, 100% { transform: translate(-50%, -50%) scale(0.97); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); }
+    50%      { transform: translate(-50%, -50%) scale(1.03); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10); }
+  }
+
+  /* The mobile app, drawn as a light, realistically-proportioned phone. */
+  .mobile-phone {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .mobile-phone__frame {
+    position: relative;
+    width: clamp(34px, 8.5vw, 42px);
+    aspect-ratio: 9 / 15.5;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--ink) 7%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--ink) 16%, var(--surface));
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.07);
+  }
+  /* Screen, inset with a faint brand tint. */
+  .mobile-phone__frame::before {
+    content: "";
+    position: absolute;
+    inset: 2.5px;
+    border-radius: 8px;
+    background: linear-gradient(160deg,
+      color-mix(in srgb, var(--brand) 12%, var(--surface)) 0%,
+      var(--surface) 62%);
+  }
+  .mobile-phone__island {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 38%;
+    height: 5px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--ink) 26%, var(--surface));
+    z-index: 2;
+  }
+  .mobile-phone__home {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32%;
+    height: 2.5px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--ink) 22%, transparent);
+    z-index: 2;
+  }
+  .mobile-phone__label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* The open slot: dashed, brand-accented, never animated. */
+  .app-tile--make {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--brand) 60%, var(--border));
+    background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+    color: var(--brand);
+    animation: none;
+    z-index: 3;
+  }
+  .app-tile__label {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--brand);
+  }
+  /* Label sitting below its tile. */
+  .app-tile__label--below {
+    bottom: auto;
+    top: calc(100% + 6px);
+  }
+  .app-tile--app .app-tile__label--below { color: var(--ink); }
+
+  /* Caption laid on the inner concentric arc, echoing the apps' curve.
+     Sized in viewBox user units (viewBox height 100 ≈ stage height). */
+  .pieces-orbit__eco-text {
+    fill: var(--muted);
+    font-size: 2.1px;
+    font-weight: 600;
+    letter-spacing: 0.55px;
+    text-transform: uppercase;
+    /* White halo so the caption stays readable where it crosses the wires.
+       Stroke width is in viewBox user units, proportional to the font. */
+    stroke: var(--surface);
+    stroke-width: 0.7px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-tile { animation: none; }
+  }
+</style>

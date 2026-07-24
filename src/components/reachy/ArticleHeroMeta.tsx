@@ -1,4 +1,4 @@
-import { Box, Chip, Link as MuiLink, Stack, Typography } from "@mui/material";
+import { Box, Link as MuiLink, Typography } from "@mui/material";
 import type { Author } from "@/lib/blog";
 
 function formatDate(date: string): string {
@@ -10,19 +10,17 @@ function formatDate(date: string): string {
 
 /**
  * Article metadata rendered inside the dark PageHero (white on dark): author
- * names, publication date, reading time and tags. Mirrors the research article
+ * names, publication date and reading time. Mirrors the research article
  * template's header, tuned for the Reachy blog subheader.
  */
 export default function ArticleHeroMeta({
   authors = [],
   date,
   readingTime = 0,
-  tags = [],
 }: {
   authors?: Author[];
   date?: string;
   readingTime?: number;
-  tags?: string[];
 }) {
   const secondary: string[] = [];
   if (date) secondary.push(formatDate(date));
@@ -63,29 +61,6 @@ export default function ArticleHeroMeta({
           </Box>
         )}
       </Typography>
-
-      {tags.length > 0 && (
-        <Stack
-          direction="row"
-          spacing={1}
-          useFlexGap
-          sx={{ justifyContent: "center", flexWrap: "wrap", gap: 1, mt: 2 }}
-        >
-          {tags.map((tag) => (
-            <Chip
-              key={tag}
-              label={tag}
-              size="small"
-              sx={{
-                backgroundColor: "rgba(255,255,255,0.08)",
-                color: "rgba(255,255,255,0.9)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                fontWeight: 500,
-              }}
-            />
-          ))}
-        </Stack>
-      )}
     </Box>
   );
 }

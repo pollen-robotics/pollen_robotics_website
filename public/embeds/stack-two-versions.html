@@ -1,0 +1,274 @@
+<div class="two-versions">
+  <div class="tv-cards">
+    <!-- Wireless: computer inside, lives on Wi-Fi, driven from the phone. -->
+    <div class="tv-card">
+      <div class="tv-scene">
+        <div class="tv-node">
+          <img class="tv-robot" src="/reachy-buste.svg" alt="" aria-hidden="true" />
+          <span class="tv-badge tv-badge--in" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="7" y="7" width="10" height="10" rx="1.5" />
+              <path d="M10 3v3M14 3v3M10 18v3M14 18v3M3 10h3M3 14h3M18 10h3M18 14h3" />
+            </svg>
+          </span>
+        </div>
+        <div class="tv-wifi" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.5a10 10 0 0 1 14 0" />
+            <path d="M8 15.5a5.5 5.5 0 0 1 8 0" />
+            <circle cx="12" cy="18.5" r="0.6" fill="currentColor" stroke="none" />
+          </svg>
+        </div>
+      </div>
+      <div class="tv-title">Reachy Mini <strong>wireless</strong></div>
+      <p class="tv-desc">
+        The polished, end-user experience. Its computer is <strong>inside</strong>,
+        it lives on your Wi-Fi, and everything happens from the phone in your hand.
+      </p>
+    </div>
+
+    <!-- Lite: no computer inside, plugs into yours over USB. -->
+    <div class="tv-card">
+      <div class="tv-scene tv-scene--lite">
+        <div class="tv-node">
+          <img class="tv-robot" src="/reachy-buste.svg" alt="" aria-hidden="true" />
+        </div>
+        <span class="tv-cable" aria-hidden="true">
+          <svg viewBox="0 0 56 92" fill="none">
+            <!-- cord running low, from the robot's lower-right into the laptop's base -->
+            <path class="tv-cable__cord" d="M6 84 C 16 92, 31 92, 41 86" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none" />
+            <circle class="tv-cable__end" cx="6" cy="84" r="2.4" fill="currentColor" />
+            <circle class="tv-cable__end" cx="41" cy="86" r="2.4" fill="currentColor" />
+          </svg>
+        </span>
+        <div class="tv-node tv-node--computer">
+          <span class="device-laptop" aria-hidden="true">
+            <span class="device-laptop__screen"></span>
+            <span class="device-laptop__base"></span>
+          </span>
+        </div>
+      </div>
+      <div class="tv-title">Reachy Mini <strong>lite</strong></div>
+      <p class="tv-desc">
+        For makers and tinkerers. Same head, antennas, camera and expressiveness,
+        but <strong>no computer inside</strong>: it plugs into yours over USB and
+        the desktop app does the thinking.
+      </p>
+    </div>
+  </div>
+
+  <!-- Both feed into one shared ecosystem. -->
+  <div class="tv-shared">
+    <span class="tv-shared__tag">One ecosystem</span>
+    <span class="tv-shared__text">Same mobile app, same store, same apps.</span>
+  </div>
+</div>
+
+<style>
+  .two-versions {
+    --ink: var(--article-text, #14161a);
+    --muted: var(--article-muted, #6b7280);
+    --border: var(--article-border, rgba(0, 0, 0, 0.14));
+    --surface: var(--article-surface, #fff);
+    --brand: var(--primary-color, #2a7de1);
+    width: 100%;
+    box-sizing: border-box;
+    color: var(--ink);
+  }
+  .two-versions * { box-sizing: border-box; }
+
+  .tv-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tv-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px 18px 22px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+
+  /* Scene: robot and its "brain" (inside for wireless, a laptop for lite). */
+  .tv-scene {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 92px;
+    margin-top: 8px;
+    margin-bottom: 26px;
+  }
+  .tv-node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .tv-robot {
+    width: clamp(46px, 12vw, 58px);
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.12));
+  }
+
+  /* Small circular glyph badges. */
+  .tv-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted) 6%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--muted) 50%, var(--surface));
+    color: var(--muted);
+  }
+  .tv-badge svg { width: 17px; height: 17px; }
+  /* The "computer inside" chip, tucked onto the robot. */
+  .tv-badge--in {
+    position: absolute;
+    right: -9px;
+    bottom: -5px;
+  }
+
+  /* Wi-Fi waves, rotated so they radiate outward from the head. */
+  .tv-wifi {
+    color: var(--muted);
+    margin-bottom: 22px;
+    margin-left: -6px;
+  }
+  .tv-wifi svg {
+    width: 38px;
+    height: 38px;
+    transform: rotate(45deg);
+  }
+
+  /* Lite: a real cable runs from the robot to the laptop, its connectors
+     tucked over each side so it reads as physically plugged in. */
+  .tv-scene--lite { gap: 0; }
+  .tv-cable {
+    position: relative;
+    z-index: 1;
+    color: color-mix(in srgb, var(--ink) 45%, var(--surface));
+    align-self: stretch;
+    width: 56px;
+    margin: 0 -6px;
+  }
+  .tv-cable svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  /* Sit the computer a touch lower than the robot, resting on the scene floor. */
+  .tv-node--computer {
+    color: var(--ink);
+    align-self: flex-end;
+    margin-bottom: 2px;
+  }
+  .tv-node__label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  /* Laptop drawn in the same light device language as the phone glyphs. */
+  .device-laptop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: clamp(52px, 13vw, 64px);
+  }
+  .device-laptop__screen {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 7px 7px 3px 3px;
+    background: color-mix(in srgb, var(--ink) 7%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--ink) 16%, var(--surface));
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.07);
+  }
+  .device-laptop__screen::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 4px;
+    background: linear-gradient(160deg,
+      color-mix(in srgb, var(--brand) 12%, var(--surface)) 0%,
+      var(--surface) 62%);
+  }
+  .device-laptop__base {
+    width: 128%;
+    height: 5px;
+    margin-top: 1.5px;
+    border-radius: 0 0 6px 6px;
+    background: color-mix(in srgb, var(--ink) 9%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--ink) 16%, var(--surface));
+    border-top: none;
+  }
+
+  .tv-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .tv-title strong { color: var(--ink); font-weight: 800; }
+  .tv-desc {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: var(--muted);
+    max-width: 30ch;
+  }
+  .tv-desc strong { color: var(--ink); font-weight: 700; }
+
+  /* Shared ecosystem strip, tying both versions together. */
+  .tv-shared {
+    position: relative;
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px 10px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--brand) 30%, var(--border));
+    text-align: center;
+  }
+  /* Little upward notch to suggest both cards feeding in. */
+  .tv-shared::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+    border-left: 1px solid color-mix(in srgb, var(--brand) 30%, var(--border));
+    border-top: 1px solid color-mix(in srgb, var(--brand) 30%, var(--border));
+  }
+  .tv-shared__tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--brand);
+  }
+  .tv-shared__text {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  @media (max-width: 520px) {
+    .tv-cards { grid-template-columns: 1fr; }
+    .tv-desc { max-width: none; }
+  }
+</style>
